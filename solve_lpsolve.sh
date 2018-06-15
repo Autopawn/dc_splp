@@ -24,7 +24,6 @@ prob="$1"
 ext=lp_"$prob"
 folder=results/"$prob"_lpsolve
 
-rm -rf "$folder" || true
 mkdir -p "$folder"
 
 todo_array=($(find problems/prob_*_"$ext" -type f)) # places output into an array

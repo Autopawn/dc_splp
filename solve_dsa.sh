@@ -36,9 +36,7 @@ ext=dsa_"$prob"
 folder=results/"$prob"_"$dsaname"
 hcfolder=results/"$prob"_"$dsaname"hc
 
-rm -rf "$folder" || true
 mkdir -p "$folder"
-rm -rf "$hcfolder" || true
 mkdir -p "$hcfolder"
 
 todo_array=($(find problems/prob_*_"$ext" -type f)) # places output into an array
