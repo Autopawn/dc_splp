@@ -25,7 +25,6 @@ def random_pos(fname,n,m,size):
     dst = np.sqrt(dx**2 + dy**2)
     fdx = np.array([fxs]).T - np.array([fxs])
     fdy = np.array([fys]).T - np.array([fys])
-    fdst = np.sqrt(fdx**2 + fdy**2)
 
     # Create file with the positions:
     fp = open(fname+"_pos","w")
@@ -48,8 +47,8 @@ def random_pos(fname,n,m,size):
         fp_splp.write(" +%s X%d"%(fcost,i))
     for j in range(m):
         for i in range(n):
-            fp_splp.write(" +%d Y%dc%d"%(dst[i][j],j,i))
-            fp_pmpm.write(" +%d Y%dc%d"%(dst[i][j],j,i))
+            fp_splp.write(" +%d Y%dc%d"%(int(round(dst[i][j])),j,i))
+            fp_pmpm.write(" +%d Y%dc%d"%(int(round(dst[i][j])),j,i))
     fp_splp.write(";\n\n")
     fp_pmpm.write(";\n\n")
 
@@ -98,11 +97,13 @@ def random_pos(fname,n,m,size):
     fp_pmpm.write("\n")
     #
     for i in range(n):
-        for j in range(n):
-            fp_splp.write("%d "%fdst[i][j])
-            fp_pmpm.write("%d "%fdst[i][j])
-        fp_splp.write("\n")
-        fp_pmpm.write("\n")
+        fp_splp.write("%d %d\n"%(fxs[i],fys[i]))
+        fp_pmpm.write("%d %d\n"%(fxs[i],fys[i]))
+    fp_splp.write("\n")
+    fp_pmpm.write("\n")
+    for i in range(m):
+        fp_splp.write("%d %d\n"%(cxs[i],cys[i]))
+        fp_pmpm.write("%d %d\n"%(cxs[i],cys[i]))
     fp_splp.write("\n")
     fp_pmpm.write("\n")
     #
@@ -111,13 +112,6 @@ def random_pos(fname,n,m,size):
         fp_pmpm.write("%d "%1)
     fp_splp.write("\n\n")
     fp_pmpm.write("\n\n")
-    #
-    for i in range(n):
-        for j in range(m):
-            fp_splp.write("%d "%dst[i][j])
-            fp_pmpm.write("%d "%dst[i][j])
-        fp_splp.write("\n")
-        fp_pmpm.write("\n")
     #
     fp_splp.close()
     fp_pmpm.close()

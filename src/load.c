@@ -53,30 +53,33 @@ problem *new_problem_load(const char *file){
     printf("N Clients: %d\n",prob->n_clients);
     assert(prob->n_clients<=MAX_CLIENTS);
 
-    // Read the facility distance matrix:
-    int warning_nonzero_issued = 0;
-    int warning_nonsymm_issued = 0;
-    printf("Reading facility distance matrix...\n");
+    // Read the facility positions
+    printf("Reading facility positions...\n");
+    lint fxs[MAX_FACILITIES];
+    lint fys[MAX_FACILITIES];
     for(int i=0;i<prob->n_facilities;i++){
-        for(int j=0;j<prob->n_facilities;j++){
-            int result = fscanf(fp,"%lld",&prob->fdistances[i][j]);
-            if(result==EOF){
-                fprintf(stderr,"ERROR: EOF while reading facility distance matrix!\n");
-                exit(1);
-            }else if(result!=1){
-                fprintf(stderr,"ERROR: Distance expected!\n");
-                exit(1);
-            }
-            if(i==j && prob->fdistances[i][j]!=0 &&
-                    warning_nonzero_issued==0){
-                printf("WARNING: Non-zero distance on diagonal.\n");
-                warning_nonzero_issued = 1;
-            }
-            if(i>j && prob->fdistances[i][j]!=prob->fdistances[j][i] &&
-                    warning_nonsymm_issued==0){
-                printf("WARNING: Matrix is nonsymmetric.\n");
-                warning_nonsymm_issued = 1;
-            }
+        int result = fscanf(fp,"%lld %lld",&fxs[i],&fys[i]);
+        if(result==EOF){
+            fprintf(stderr,"ERROR: EOF while reading facility positions!\n");
+            exit(1);
+        }else if(result!=2){
+            fprintf(stderr,"ERROR: Positions expected!\n");
+            exit(1);
+        }
+    }
+
+    // Read the client positions
+    printf("Reading client positions...\n");
+    lint cxs[MAX_FACILITIES];
+    lint cys[MAX_FACILITIES];
+    for(int i=0;i<prob->n_facilities;i++){
+        int result = fscanf(fp,"%lld %lld",&cxs[i],&cys[i]);
+        if(result==EOF){
+            fprintf(stderr,"ERROR: EOF while reading client positions!\n");
+            exit(1);
+        }else if(result!=2){
+            fprintf(stderr,"ERROR: Positions expected!\n");
+            exit(1);
         }
     }
 
@@ -98,18 +101,25 @@ problem *new_problem_load(const char *file){
     printf("Min weight: %d\n",minw);
     printf("Max weight: %d\n",maxw);
 
-    // Read the facility-client distance matrix:
-    printf("Reading facility-client distance matrix...\n");
+    // Compute facility-facility distance matrix:
+    printf("Computing facility-facility distance matrix...\n");
+    for(int i=0;i<prob->n_facilities;i++){
+        for(int j=0;j<prob->n_facilities;j++){
+            lint delta_x = fxs[i]-fxs[j];
+            lint delta_y = fys[i]-fys[j];
+            lint dist = (lint) round(sqrt(delta_x*delta_x+delta_y*delta_y));
+            prob->fdistances[i][j] = dist;
+        }
+    }
+
+    // Compute facility-client distance matrix:
+    printf("Computing facility-client distance matrix...\n");
     for(int i=0;i<prob->n_facilities;i++){
         for(int j=0;j<prob->n_clients;j++){
-            int result = fscanf(fp,"%lld",&prob->distances[i][j]);
-            if(result==EOF){
-                fprintf(stderr,"ERROR: EOF while reading facility-client distance matrix!\n");
-                exit(1);
-            }else if(result!=1){
-                fprintf(stderr,"ERROR: Distance expected!\n");
-                exit(1);
-            }
+            lint delta_x = fxs[i]-cxs[j];
+            lint delta_y = fys[i]-cys[j];
+            lint dist = (lint) round(sqrt(delta_x*delta_x+delta_y*delta_y));
+            prob->distances[i][j] = dist;
         }
     }
     //

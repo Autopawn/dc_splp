@@ -1,6 +1,7 @@
 #ifndef DSA_LOAD_H
 #define DSA_LOAD_H
 
+#include <math.h>
 #include "solution.h"
 
 problem *new_problem_load(const char *file);
