@@ -1,11 +1,11 @@
 
-# NPROBS=100
-# NN="100 200 300 400 500"
-# PP="4 6 8 10 12 14"
+NPROBS=100
+NN="100 200 300 400 500"
+PP="4 8 12 16"
 
-NPROBS=4
-NN="10 20"
-PP="4 6 8"
+# NPROBS=4
+# NN="10 20"
+# PP="4 6 8"
 
 rm -rf problems || true
 mkdir -p problems
