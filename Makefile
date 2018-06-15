@@ -1,5 +1,5 @@
 
-all: dsa dsa_ls dsa_hausdorff dsa_verbose dsa_pairs dsa_vrtest
+all: dsa dsa_ls dsa_hausdorff
 
 bin:
 	mkdir -p bin
@@ -17,17 +17,6 @@ dsa_ls: bin
 dsa_hausdorff: bin
 	cd src; gcc -std=c99 -O -Wall -lm *.c \
 		-D HAUSDORFF -o ../bin/dsa_hausdorff
-dsa_verbose: bin
-	cd src; gcc -std=c99 -O -Wall -lm *.c \
-		-D VERBOSE -o ../bin/dsa_verbose
-dsa_pairs: bin
-	cd src; gcc -std=c99 -O -Wall -lm *.c \
-		-D VERBOSE -D PAIR_DISTANCE -D PRINT_EXPANSIONS \
-		-o ../bin/dsa_pairs
-dsa_vrtest: bin
-	cd src; gcc -std=c99 -O -Wall -lm *.c \
-		-D EXTENSIVE_VR_TEST_STEP=50 -D EXTENSIVE_VR_TEST_MAX=2000 \
-		-o ../bin/dsa_vrtest
 dsa_test: results test_problem
 	cd src; gcc -std=c99 -O -g -Wall -lm *.c \
 		-D LOCAL_SEARCH -D DEBUG -o ../bin/dsa

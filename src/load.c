@@ -12,11 +12,23 @@ problem *new_problem_load(const char *file){
     problem *prob = malloc(sizeof(problem));
 
     // Read the facility cost:
-    if(fscanf(fp,"%lld",&prob->facility_fixed_cost)!=1){
+    lint fcost;
+    if(fscanf(fp,"%lld",&fcost)!=1){
         fprintf(stderr,"ERROR: facility cost expected!\n");
         exit(1);
     }
-    printf("Facility cost: %lld\n",prob->facility_fixed_cost);
+    if(fcost<0){
+        prob->facility_fixed_cost = 0;
+        prob->size_restriction = -fcost;
+        printf("--- p-median PROBLEM ---\n");
+        printf("Facilities: %d\n",prob->size_restriction);
+        assert(prob->size_restriction<=MAX_SOL_SIZE);
+    }else{
+        prob->facility_fixed_cost = fcost;
+        prob->size_restriction = -1;
+        printf("--- SPLP PROBLEM ---\n");
+        printf("Facility cost: %lld\n",prob->facility_fixed_cost);
+    }
 
     // Read the transport cost:
     if(fscanf(fp,"%lld",&prob->transport_cost)!=1){

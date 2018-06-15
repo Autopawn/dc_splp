@@ -31,6 +31,8 @@ typedef struct{
     // ^ Cost of each facility.
     lint transport_cost;
     // ^ Cost of connecting one weight of unit one unit of distance.
+    int size_restriction;
+    // ^ When it is not -1, the returned solutions must be of that size, also there is no solution filtering in the expansion process.
 } problem;
 
 // Auxiliar functions:

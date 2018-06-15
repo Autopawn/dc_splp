@@ -73,7 +73,7 @@ void reduce_solutions(const problem *prob,
     if(vision_range>*n_sols) vision_range = *n_sols;
     // Sort solution pointers from larger to smaller value of the solution.
     qsort(sols,*n_sols,sizeof(solution*),solution_value_cmp_inv);
-    #ifdef VERBOSE
+    #ifdef VERBOSE_BASESORTED
         printf("#BASESORTED\n");
         print_solsets(sols,*n_sols);
     #endif
@@ -102,12 +102,6 @@ void reduce_solutions(const problem *prob,
             pair.indx_b = i+j;
             pair.dissim = solution_dissimilitude(prob,
                 sols[pair.indx_a],sols[pair.indx_b]);
-            #ifdef PAIR_DISTANCE
-            printf("#INITIAL DISSIM %d(%lld) %d(%lld) %llu\n",
-                pair.indx_a,sols[pair.indx_a]->value,
-                pair.indx_b,sols[pair.indx_b]->value,
-                pair.dissim);
-            #endif
             heap_add(heap,&n_pairs,pair);
         }
     }
@@ -119,21 +113,6 @@ void reduce_solutions(const problem *prob,
         if(n_pairs==0) break;
         dissimpair pair = heap_poll(heap,&n_pairs);
         if(!discarted[pair.indx_a] && !discarted[pair.indx_b]){
-            #ifdef PAIR_DISTANCE
-            // Get the distance on the linked list of the solutions of the pair:
-            // NOTE: this may be expensive to do.
-            int idx = pair.indx_a;
-            int llist_dist = 0;
-            while(idx != pair.indx_b){
-                idx = nexts[idx];
-                assert(idx!=-1);
-                llist_dist++;
-            }
-            // Print the indexes, dissimilitude and distance in the linked list:
-            int n_base = sols[pair.indx_a]->n_facilities;
-            printf("#DIST %d %d %d %llu %d\n",
-                n_base,pair.indx_a,pair.indx_b,pair.dissim,llist_dist);
-            #endif
             // Delete the second solution on the pair.
             int to_delete = pair.indx_b;
             discarted[to_delete] = 1;
@@ -177,12 +156,6 @@ void reduce_solutions(const problem *prob,
                     pair.indx_b = pair_b;
                     pair.dissim = solution_dissimilitude(prob,
                         sols[pair.indx_a],sols[pair.indx_b]);
-                    #ifdef PAIR_DISTANCE
-                    printf("#REPLACEMENT DISSIM %d(%lld) %d(%lld) %llu\n",
-                        pair.indx_a,sols[pair.indx_a]->value,
-                        pair.indx_b,sols[pair.indx_b]->value,
-                        pair.dissim);
-                    #endif
                     assert(n_pairs<2*(*n_sols)*vision_range);
                     heap_add(heap,&n_pairs,pair);
                 }

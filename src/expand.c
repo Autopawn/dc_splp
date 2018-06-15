@@ -97,15 +97,8 @@ solution **new_expand_solutions(const problem *prob,
         *new_sol = *fsol->origin;
         solution_add(prob,new_sol,fsol->newf);
         lint delta = new_sol->value - fsol->origin->value;
-        #ifdef PRINT_EXPANSIONS
-        printf("#EXPAND {");
-            for(int k=0;k<new_sol->n_facilities;k++){
-                printf("%d",new_sol->facilities[k]);
-                if(k<new_sol->n_facilities-1) printf(",");
-            }
-            printf("} :%lld %lld\n",new_sol->value,delta);
-        #endif
-        if(delta<=0){
+        // When size_restriction is active, the solution is never filtered
+        if(delta<=0 && prob->size_restriction==-1){
             free(new_sol);
             continue;
         }
