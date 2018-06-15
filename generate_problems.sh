@@ -1,11 +1,12 @@
 
-NPROBS=100
-NN="100 200 300 400 500"
-PP="4 8 12 16"
+if (( $# != 3 )); then
+    echo "usage: bash generate_problems.sh <p_values> <n_values> <n_probs>"
+    exit 1
+fi
 
-# NPROBS=4
-# NN="10 20"
-# PP="4 6 8"
+NPROBS="$3"
+NN="$2"
+PP="$1"
 
 rm -rf problems || true
 mkdir -p problems
