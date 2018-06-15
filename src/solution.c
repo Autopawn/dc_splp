@@ -82,9 +82,6 @@ void solution_remove(const problem *prob, solution *sol, short remf){
             break;
         }
     }
-    if(inner_i==-1){
-        printf("NFAC: %d\n",sol->n_facilities);
-    }
     assert(inner_i!=-1);
     // Remove the facility of the solution.
     rem_of_sorted(sol->facilities,&sol->n_facilities,remf);

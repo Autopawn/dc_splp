@@ -76,6 +76,10 @@ int main(int argc, char **argv){
         for(int i=0;i<sols_show;i++){
             print_solution(stdout,sols[i]);
         }
+        // Update timer
+        end = clock();
+        seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
+        printf("All done in %f [s]!\n",seconds);
         printf("Saving solutions...\n");
         save_solutions(argv[6],sols,sols_show,n_sols,input_file,pool_size,vision_range,
             seconds,max_size_found);

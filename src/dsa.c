@@ -90,6 +90,7 @@ solution **new_find_best_solutions(problem* prob,
 }
 
 void local_search_solutions(problem* prob, solution **sols, int *n_sols){
+    if(*n_sols==0) return;
     printf("Performing local search for %d solutions...\n",*n_sols);
     // Perform HC for each solution:
     for(int i=0;i<*n_sols;i++){
