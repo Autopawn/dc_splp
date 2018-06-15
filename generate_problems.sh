@@ -13,19 +13,12 @@ mkdir -p problems
 
 NAMEFORMAT="n%04d_i%04d"
 
-# Create templates
+# Create problems
 for nn in $NN; do
     for prob in $(seq 1 $NPROBS); do
         name=$(printf $NAMEFORMAT $nn $prob)
         templ_name=problems/template_"$name"
         python tools/template_gen.py $nn $nn 10000 "$templ_name"
-    done
-done
-
-for nn in $NN; do
-    for prob in $(seq 1 $NPROBS); do
-        name=$(printf $NAMEFORMAT $nn $prob)
-        templ_name=problems/template_"$name"
         for pp in $PP; do
             prob_name=problems/prob_"$name"
             bb=$(python -c "print(int(round( 0.75 * $nn * 2*10000/(3*(3.141592653589793**0.5)) * $pp**(-1.5)  )))")
