@@ -20,10 +20,6 @@ def generate_svg(pos_file,geoloc_sol,lpsolve_sol,svg_file,size=1024,labels=False
             lin = lin.split()
             if lin[1] == "tread":
                 tread=True
-            elif lin[1] == "vgain":
-                vgain=float(lin[2])
-            elif lin[1] == "tcost":
-                tcost=float(lin[2])
             continue
         kind,x,y = lin.split()
         x = int(float(x))
