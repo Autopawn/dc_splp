@@ -8,6 +8,8 @@ NPROBS="$2"
 NN="$1"
 
 rm -rf templates || true
+rm -rf problems || true
+rm -rf results || true
 mkdir -p templates
 
 
