@@ -1,4 +1,9 @@
-mkdir -p results
+if (( $# != 1 )); then
+    echo "usage: bash solve_problems.sh <p_values>"
+    exit 1
+fi
+
+bash generate_problems.sh $1
 
 qsub -o proc1.out -e proc1.err -N pm_lpsolve solve_lpsolve.sh pm
 qsub -o proc2.out -e proc2.err -N splp_lpsolve solve_lpsolve.sh splp

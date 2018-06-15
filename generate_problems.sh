@@ -4,8 +4,6 @@ if (( $# != 1 )); then
     exit 1
 fi
 
-NPROBS="$3"
-NN="$2"
 PP="$1"
 
 rm -rf problems || true
