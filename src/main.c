@@ -7,7 +7,11 @@ int main(int argc, char **argv){
     int pool_size,vision_range,max_to_show;
     const char *input_file = NULL;
     int good = 1;
-    if(argc!=6) good = 0;
+    #ifdef LOCAL_SEARCH
+        if(argc!=7) good = 0;
+    #else
+        if(argc!=6) good = 0;
+    #endif
     if(good){
         if(sscanf(argv[1],"%d",&pool_size)!=1) good = 0;
         if(sscanf(argv[2],"%d",&vision_range)!=1) good = 0;
@@ -15,7 +19,11 @@ int main(int argc, char **argv){
         input_file = argv[4];
     }
     if(!good){
-        printf("Usage: %s <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_file>\n",argv[0]);
+        #ifdef LOCAL_SEARCH
+            printf("Usage: %s <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_before_ls> <output_after_ls>\n",argv[0]);
+        #else
+            printf("Usage: %s <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_file>\n",argv[0]);
+        #endif
         printf("A vision_range of -1 will activate random choice reduction.\n");
         printf("A pool_size of 1 will activate greedy mode.\n");
         exit(1);
@@ -54,6 +62,9 @@ int main(int argc, char **argv){
     for(int i=0;i<sols_show;i++){
         print_solution(stdout,sols[i]);
     }
+    printf("Saving solutions...\n");
+    save_solutions(argv[5],sols,sols_show,n_sols,input_file,pool_size,vision_range,
+        seconds,max_size_found);
     // Perform local search
     #ifdef LOCAL_SEARCH
         printf("Starting local searchs...\n");
@@ -65,17 +76,10 @@ int main(int argc, char **argv){
         for(int i=0;i<sols_show;i++){
             print_solution(stdout,sols[i]);
         }
+        printf("Saving solutions...\n");
+        save_solutions(argv[6],sols,sols_show,n_sols,input_file,pool_size,vision_range,
+            seconds,max_size_found);
     #endif
-    printf("Saving solutions...\n");
-    if(sols_show==0){
-        solution empty_sol = empty_solution();
-        solution *empty_sol_p = &empty_sol;
-        save_solutions(argv[5],&empty_sol_p,1,input_file,pool_size,vision_range,
-            seconds,max_size_found);
-    }else{
-        save_solutions(argv[5],sols,sols_show,input_file,pool_size,vision_range,
-            seconds,max_size_found);
-    }
     // Free memory
     for(int i=0;i<n_sols;i++){
         free(sols[i]);

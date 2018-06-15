@@ -118,7 +118,7 @@ problem *new_problem_load(const char *file){
     return prob;
 }
 
-void save_solutions(const char *file, solution **sols, int n_sols,
+void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sols,
         const char *input_file, int pool_size, int vision_range,
         float seconds, int n_iterations){
     FILE *fp;
@@ -133,6 +133,7 @@ void save_solutions(const char *file, solution **sols, int n_sols,
     fprintf(fp,"# Input_file: %s\n",input_file);
     fprintf(fp,"# Pool_size: %d\n",pool_size);
     fprintf(fp,"# Iterations: %d\n",n_iterations);
+    fprintf(fp,"# Final_solutions: %d\n",tot_n_sols);
     fprintf(fp,"# Vision_range: %d\n",vision_range);
     #ifdef HAUSDORFF
     fprintf(fp,"# Dissimilitude: HAUSDORFF\n");
@@ -140,8 +141,13 @@ void save_solutions(const char *file, solution **sols, int n_sols,
     fprintf(fp,"# Dissimilitude: MEAN_GEOMETRIC_ERROR\n");
     #endif
     // Print the solutions:
-    for(int i=0;i<n_sols;i++){
-        print_solution(fp,sols[i]);
+    if(n_sols==0){
+        solution empty_sol = empty_solution();
+        print_solution(fp,&empty_sol);
+    }else{
+        for(int i=0;i<n_sols;i++){
+            print_solution(fp,sols[i]);
+        }
     }
     fclose(fp);
 }
