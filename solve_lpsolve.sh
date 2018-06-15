@@ -7,7 +7,7 @@
 
 #parallelization using: https://stackoverflow.com/a/6594537/4386784
 
-MAX_JOBS=5
+MAX_JOBS="$1"
 
 index=0
 
@@ -19,7 +19,7 @@ else
     export lp_solve="lp_solve"
 fi
 
-prob="$1"
+prob="$2"
 ext=lp_"$prob"
 folder=results/"$prob"_lpsolve
 

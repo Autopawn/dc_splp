@@ -7,7 +7,7 @@
 
 #parallelization using: https://stackoverflow.com/a/6594537/4386784
 
-MAX_JOBS=5
+MAX_JOBS="$1"
 
 index=0
 
@@ -19,17 +19,18 @@ else
     export lp_solve="lp_solve"
 fi
 
-if (( $# == 2 )); then
-    dsaname=dsa"$2"
+if (( $# == 3 )); then
+    dsaname=dsa"$3"
     vr=99999999
 fi
-if (( $# == 3 )); then
-    dsaname=dsa"$2"vr"$3"
-    vr="$3"
+if (( $# == 4 )); then
+    dsaname=dsa"$3"vr"$4"
+    vr="$4"
 fi
-pz="$2"
 
-prob="$1"
+pz="$3"
+
+prob="$2"
 ext=dsa_"$prob"
 
 folder=results/"$prob"_"$dsaname"
