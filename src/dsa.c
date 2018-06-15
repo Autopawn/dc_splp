@@ -94,9 +94,11 @@ void local_search_solutions(problem* prob, solution **sols, int *n_sols){
     // Perform HC for each solution:
     for(int i=0;i<*n_sols;i++){
         solution enhanced = solution_hill_climbing(prob,*sols[i]);
-        if(sols[i]->value!=enhanced.value){
-            printf("sol %d: %lld -> %lld\n",i,sols[i]->value,enhanced.value);
-        }
+        #ifdef VERBOSE_LOCAL_SEARCH
+            if(sols[i]->value!=enhanced.value){
+                printf("sol %d: %lld -> %lld\n",i,sols[i]->value,enhanced.value);
+            }
+        #endif
         *sols[i] = enhanced;
     }
     printf("Deleting repeated solutions...\n");
