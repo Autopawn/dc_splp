@@ -15,9 +15,9 @@ qsub -N splp_lpsolve solve_lpsolve.sh -F "5 splp" || \
 # qsub -N splp_dsa100vr400 solve_dsa.sh -F "5 splp 100 500" || \
 #     bash solve_dsa.sh "2" "splp" "100" "500"
 
-qsub -N pm_dsa100 solve_dsa.sh -F "4 pm 100" || \
+qsub -N pm_dsa100 solve_dsa.sh -F "3 pm 100" || \
     bash solve_dsa.sh "1" "pm" "100"
-qsub -N splp_dsa100 solve_dsa.sh -F "4 splp 100" || \
+qsub -N splp_dsa100 solve_dsa.sh -F "3 splp 100" || \
     bash solve_dsa.sh "1" "splp" "100"
 
 qsub -N pm_dsa200vr500 solve_dsa.sh -F "5 pm 200 500" || \
