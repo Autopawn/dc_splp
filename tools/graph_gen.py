@@ -16,13 +16,15 @@ problems={
     "pm":"$p$-median, $p$=",
 }
 
+RES_FOLDER = "results_a"
+
 for measure in measures:
     values = {}
     # Iterate over the strategies:
-    for strat in os.listdir("results"):
+    for strat in os.listdir(RES_FOLDER):
 
         # Read files:
-        fname = os.path.join("results",strat,measure)
+        fname = os.path.join(RES_FOLDER,strat,measure)
         if os.path.isfile(fname):
             fil = open(fname)
             for lin in fil:

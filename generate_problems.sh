@@ -18,7 +18,7 @@ for templ_name in templates/template_*_dsa_splp; do
     nn=$(python -c "print(\"$templ_bname\".split('_')[2][1:])")
     for pp in $PP; do
         prob_name=problems/prob_"$name"
-        bb=$(python -c "print(int(round( 0.75 * int(\"$nn\") * 2*10000/(3*(3.141592653589793**0.5)) * $pp**(-1.5)  )))")
+        bb=$(python -c "print(int(round( int(\"$nn\") * 2*10000/(3*(3.141592653589793**0.5)) * $pp**(-1.5)  )))")
         ppf=$(printf "%02d" $pp)
         # Create DSA SPLP
         sed -e "s/<<FCOST>>/$bb/g" "$templ_name" > "$prob_name"_p"$ppf"_dsa_splp
@@ -40,7 +40,7 @@ for templ_name in templates/template_*_lp_splp; do
     nn=$(python -c "print(\"$templ_bname\".split('_')[2][1:])")
     for pp in $PP; do
         prob_name=problems/prob_"$name"
-        bb=$(python -c "print(int(round( 0.75 * int(\"$nn\") * 2*10000/(3*(3.141592653589793**0.5)) * $pp**(-1.5)  )))")
+        bb=$(python -c "print(int(round( int(\"$nn\") * 2*10000/(3*(3.141592653589793**0.5)) * $pp**(-1.5)  )))")
         ppf=$(printf "%02d" $pp)
         # Create LP SPLP
         sed -e "s/<<FCOST>>/$bb/g" "$templ_name" > "$prob_name"_p"$ppf"_lp_splp
