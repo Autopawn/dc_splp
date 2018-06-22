@@ -4,7 +4,14 @@ if (( $# != 1 )); then
 fi
 
 # NOTE: should delete problems/
-rm -rf results
+
+read -p "Delete all results first [y/n]? " choice
+case "$choice" in
+  y|Y ) echo "Deleting them." && rm -rf results;;
+  n|N ) echo "Not deleting them.";;
+  * ) echo "Invalid answer!" && exit;;
+esac
+
 bash _generate_problems.sh "$1"
 
 for pp in $1; do

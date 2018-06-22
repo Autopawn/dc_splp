@@ -15,7 +15,7 @@ NAMEFORMAT="n%04d_i%04d"
 for templ_name in templates/template_*_dsa_splp; do
     templ_bname=$(basename "$templ_name")
     name=$(python -c "print('_'.join(\"$templ_bname\".split('_')[1:3]))")
-    nn=$(python -c "print(\"$templ_bname\".split('_')[2][1:])")
+    nn=$(python -c "print(\"$templ_bname\".split('_')[1][1:])")
     for pp in $PP; do
         prob_name=problems/prob_"$name"
         bb=$(python -c "print(int(round( int(\"$nn\")*10000*3.141592653589793*0.23879331818300928*round($pp)**(-2.5)  )))")
@@ -37,7 +37,7 @@ done
 for templ_name in templates/template_*_lp_splp; do
     templ_bname=$(basename "$templ_name")
     name=$(python -c "print('_'.join(\"$templ_bname\".split('_')[1:3]))")
-    nn=$(python -c "print(\"$templ_bname\".split('_')[2][1:])")
+    nn=$(python -c "print(\"$templ_bname\".split('_')[1][1:])")
     for pp in $PP; do
         prob_name=problems/prob_"$name"
         bb=$(python -c "print(int(round( int(\"$nn\")*10000*3.141592653589793*0.23879331818300928*round($pp)**(-2.5)  )))")
