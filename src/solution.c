@@ -188,3 +188,12 @@ solution solution_hill_climbing(const problem *prob, solution sol){
     }
     return best;
 }
+
+solution random_solution(const problem *prob, int size){
+    solution sol = empty_solution();
+    while(sol.n_facilities<size){
+        int newf = rand()%prob->n_facilities;
+        solution_add(prob,&sol,newf);
+    }
+    return sol;
+}

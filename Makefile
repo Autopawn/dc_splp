@@ -1,5 +1,6 @@
+targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
-all: dsa dsa_ls dsa_hausdorff
+all: dsa dsa_ls dsa_hausdorff randomhc
 
 bin:
 	mkdir -p bin
@@ -9,16 +10,19 @@ results:
 	mkdir -p results
 
 dsa: bin
-	cd src; gcc -std=c99 -O -Wall -lm *.c \
+	cd src; gcc -std=c99 -O -Wall -lm $(targets) main.c \
 		-o ../bin/dsa
 dsa_ls: bin
-	cd src; gcc -std=c99 -O -Wall -lm *.c \
+	cd src; gcc -std=c99 -O -Wall -lm $(targets) main.c \
 		-D LOCAL_SEARCH -o ../bin/dsa_ls
+randomhc: bin
+		cd src; gcc -std=c99 -O -Wall -lm $(targets) mainhc.c \
+		-o ../bin/randomhc
 dsa_hausdorff: bin
-	cd src; gcc -std=c99 -O -Wall -lm *.c \
+	cd src; gcc -std=c99 -O -Wall -lm $(targets) main.c \
 		-D HAUSDORFF -o ../bin/dsa_hausdorff
 dsa_test: results test_problem
-	cd src; gcc -std=c99 -O -g -Wall -lm *.c \
+	cd src; gcc -std=c99 -O -g -Wall -lm $(targets) main.c \
 		-D LOCAL_SEARCH -D DEBUG -o ../bin/dsa
 	valgrind --tool=memcheck --leak-check=yes ./bin/dsa 1000 100 10 \
 		tests/simple2_dsa results/simple2_dsa.txt
