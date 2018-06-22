@@ -26,7 +26,7 @@ if (( $# != 5 )); then
     exit 1
 fi
 
-randomhcname=randomhc"$4"x"$5"
+randomhcname=randomhc"$4"
 mult="$4"
 maxsize="$5"
 
@@ -77,7 +77,7 @@ function do_job {
         sed -e "s/^/$bbname /" >> "$folder"/fsols
 
     # Delete solution:
-    rm "$solname" "$hcsolname"
+    rm "$solname"
 }
 
 set -o monitor
