@@ -12,28 +12,34 @@ case "$choice" in
   * ) echo "Invalid answer!" && exit;;
 esac
 
+QSUBPROCS=4
+QSUBPROCS_FULLVR=2
+
+LOCALPROCS=2
+LOCALPROCS_FULLVR=1
+
 bash _generate_problems.sh "$1"
 
 for pp in $1; do
 
-    qsub -N pm_lpsolve _solve_lpsolve.sh -F "$pp 5 pm" || \
-        bash _solve_lpsolve.sh "$pp" "2" "pm"
-    qsub -N splp_lpsolve _solve_lpsolve.sh -F "$pp 5 splp" || \
-        bash _solve_lpsolve.sh "$pp" "2" "splp"
+    qsub -N pm_lpsolve _solve_lpsolve.sh -F "$pp $QSUBPROCS pm" || \
+        bash _solve_lpsolve.sh "$pp" "$LOCALPROCS" "pm"
+    qsub -N splp_lpsolve _solve_lpsolve.sh -F "$pp $QSUBPROCS splp" || \
+        bash _solve_lpsolve.sh "$pp" "$LOCALPROCS" "splp"
 
-    qsub -N pm_dsa50 _solve_dsa.sh -F "$pp 3 pm 50" || \
-        bash _solve_dsa.sh "$pp" "1" "pm" "50"
-    qsub -N splp_dsa50 _solve_dsa.sh -F "$pp 3 splp 50" || \
-        bash _solve_dsa.sh "$pp" "1" "splp" "50"
+    qsub -N pm_dsa50 _solve_dsa.sh -F "$pp $QSUBPROCS_FULLVR pm 50" || \
+        bash _solve_dsa.sh "$pp" "$LOCALPROCS_FULLVR" "pm" "50"
+    qsub -N splp_dsa50 _solve_dsa.sh -F "$pp $QSUBPROCS_FULLVR splp 50" || \
+        bash _solve_dsa.sh "$pp" "$LOCALPROCS_FULLVR" "splp" "50"
 
-    qsub -N pm_dsa200vr400 _solve_dsa.sh -F "$pp 5 pm 200 400" || \
-        bash _solve_dsa.sh "$pp" "2" "pm" "200" "400"
-    qsub -N splp_dsa200vr400 _solve_dsa.sh -F "$pp 5 splp 200 400" || \
-        bash _solve_dsa.sh "$pp" "2" "splp" "200" "400"
+    qsub -N pm_dsa200vr400 _solve_dsa.sh -F "$pp $QSUBPROCS pm 200 400" || \
+        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "pm" "200" "400"
+    qsub -N splp_dsa200vr400 _solve_dsa.sh -F "$pp $QSUBPROCS splp 200 400" || \
+        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "splp" "200" "400"
 
-    qsub -N pm_dsa400vr800 _solve_dsa.sh -F "$pp 5 pm 400 800" || \
-        bash _solve_dsa.sh "$pp" "2" "pm" "400" "800"
-    qsub -N splp_dsa400vr800 _solve_dsa.sh -F "$pp 5 splp 400 800" || \
-        bash _solve_dsa.sh "$pp" "2" "splp" "400" "800"
+    qsub -N pm_dsa400vr800 _solve_dsa.sh -F "$pp $QSUBPROCS pm 400 800" || \
+        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "pm" "400" "800"
+    qsub -N splp_dsa400vr800 _solve_dsa.sh -F "$pp $QSUBPROCS splp 400 800" || \
+        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "splp" "400" "800"
 
 done
