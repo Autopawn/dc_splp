@@ -3,11 +3,13 @@
 #PBS -l walltime=8000:00:01
 #PBS mem=30gb
 
-# usage: bash solve_dsa.sh (pm|splp) <PZ> [VR]
+# usage: bash _solve_dsa.sh <p> <jobs> (pm|splp) <PZ> [VR]
 
 #parallelization using: https://stackoverflow.com/a/6594537/4386784
 
-MAX_JOBS="$1"
+ppf=$(printf "%02d" $1)
+
+MAX_JOBS="$2"
 
 index=0
 
@@ -19,18 +21,18 @@ else
     export lp_solve="lp_solve"
 fi
 
-if (( $# == 3 )); then
-    dsaname=dsa"$3"
+if (( $# == 4 )); then
+    dsaname=dsa"$4"
     vr=99999999
 fi
-if (( $# == 4 )); then
-    dsaname=dsa"$3"vr"$4"
-    vr="$4"
+if (( $# == 5 )); then
+    dsaname=dsa"$4"vr"$5"
+    vr="$5"
 fi
 
-pz="$3"
+pz="$4"
 
-prob="$2"
+prob="$3"
 ext=dsa_"$prob"
 
 folder=results/"$prob"_"$dsaname"
@@ -39,7 +41,7 @@ hcfolder=results/"$prob"_"$dsaname"hc
 mkdir -p "$folder"
 mkdir -p "$hcfolder"
 
-todo_array=($(find problems/prob_*_"$ext" -type f)) # places output into an array
+todo_array=($(find problems/prob_*_p"$ppf"_"$ext" -type f)) # places output into an array
 
 function add_next_job {
     # if still jobs to do then add one

@@ -3,11 +3,13 @@
 #PBS -l walltime=8000:00:01
 #PBS mem=30gb
 
-# usage: bash solve_lpsolve.sh (pm|splp)
+# usage: bash _solve_lpsolve.sh <p> <jobs> (pm|splp)
 
 #parallelization using: https://stackoverflow.com/a/6594537/4386784
 
-MAX_JOBS="$1"
+ppf=$(printf "%02d" $1)
+
+MAX_JOBS="$2"
 
 index=0
 
@@ -19,13 +21,13 @@ else
     export lp_solve="lp_solve"
 fi
 
-prob="$2"
+prob="$3"
 ext=lp_"$prob"
 folder=results/"$prob"_lpsolve
 
 mkdir -p "$folder"
 
-todo_array=($(find problems/prob_*_"$ext" -type f)) # places output into an array
+todo_array=($(find problems/prob_*_p"$ppf"_"$ext" -type f)) # places output into an array
 
 function add_next_job {
     # if still jobs to do then add one

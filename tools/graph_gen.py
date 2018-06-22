@@ -16,7 +16,7 @@ problems={
     "pm":"$p$-median, $p$=",
 }
 
-RES_FOLDER = "results_a"
+RES_FOLDER = raw_input("Results folder: ")
 
 for measure in measures:
     values = {}
@@ -51,6 +51,7 @@ for measure in measures:
     for prob in values:
         for pp in values[prob]:
             plt.figure(figsize=(4,3))
+            maxy = 0
             for strat in values[prob][pp]:
                 xs = sorted(list(values[prob][pp][strat].keys()))
                 ys = []
@@ -58,8 +59,10 @@ for measure in measures:
                     vals = values[prob][pp][strat][x].values()
                     ys.append(np.mean(vals))
                 plt.plot(xs,ys,label=strat)
+                maxy = np.maximum(maxy,np.max(ys))
             #
             probname = problems[prob] if prob in problems else prob
             plt.title("%s for %s%d"%(measures[measure],probname,pp))
+            plt.ylim((0,maxy))
             plt.legend()
             plt.show()

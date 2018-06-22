@@ -3,29 +3,30 @@ if (( $# != 1 )); then
     exit 1
 fi
 
-bash generate_problems.sh $1
+# NOTE: should delete problems/
+rm -rf results
+bash _generate_problems.sh "$1"
 
-qsub -N pm_lpsolve solve_lpsolve.sh -F "5 pm" || \
-    bash solve_lpsolve.sh "2" "pm"
-qsub -N splp_lpsolve solve_lpsolve.sh -F "5 splp" || \
-    bash solve_lpsolve.sh "2" "splp"
+for pp in $1; do
 
-# qsub -N pm_dsa100vr400 solve_dsa.sh -F "5 pm 100 500" || \
-#     bash solve_dsa.sh "2" "pm" "100" "500"
-# qsub -N splp_dsa100vr400 solve_dsa.sh -F "5 splp 100 500" || \
-#     bash solve_dsa.sh "2" "splp" "100" "500"
+    qsub -N pm_lpsolve _solve_lpsolve.sh -F "$pp 5 pm" || \
+        bash _solve_lpsolve.sh "$pp" "2" "pm"
+    qsub -N splp_lpsolve _solve_lpsolve.sh -F "$pp 5 splp" || \
+        bash _solve_lpsolve.sh "$pp" "2" "splp"
 
-qsub -N pm_dsa100 solve_dsa.sh -F "3 pm 100" || \
-    bash solve_dsa.sh "1" "pm" "100"
-qsub -N splp_dsa100 solve_dsa.sh -F "3 splp 100" || \
-    bash solve_dsa.sh "1" "splp" "100"
+    qsub -N pm_dsa50 _solve_dsa.sh -F "$pp 3 pm 50" || \
+        bash _solve_dsa.sh "$pp" "1" "pm" "50"
+    qsub -N splp_dsa50 _solve_dsa.sh -F "$pp 3 splp 50" || \
+        bash _solve_dsa.sh "$pp" "1" "splp" "50"
 
-qsub -N pm_dsa200vr500 solve_dsa.sh -F "5 pm 200 500" || \
-    bash solve_dsa.sh "2" "pm" "200" "500"
-qsub -N splp_dsa200vr500 solve_dsa.sh -F "5 splp 200 500" || \
-    bash solve_dsa.sh "2" "splp" "200" "500"
+    qsub -N pm_dsa200vr400 _solve_dsa.sh -F "$pp 5 pm 200 400" || \
+        bash _solve_dsa.sh "$pp" "2" "pm" "200" "400"
+    qsub -N splp_dsa200vr400 _solve_dsa.sh -F "$pp 5 splp 200 400" || \
+        bash _solve_dsa.sh "$pp" "2" "splp" "200" "400"
 
-qsub -N pm_dsa400vr1000 solve_dsa.sh -F "5 pm 400 1000" || \
-    bash solve_dsa.sh "2" "pm" "400" "1000"
-qsub -N splp_dsa400vr1000 solve_dsa.sh -F "5 splp 400 1000" || \
-    bash solve_dsa.sh "2" "splp" "400" "1000"
+    qsub -N pm_dsa400vr800 _solve_dsa.sh -F "$pp 5 pm 400 800" || \
+        bash _solve_dsa.sh "$pp" "2" "pm" "400" "800"
+    qsub -N splp_dsa400vr800 _solve_dsa.sh -F "$pp 5 splp 400 800" || \
+        bash _solve_dsa.sh "$pp" "2" "splp" "400" "800"
+
+done
