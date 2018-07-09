@@ -1,10 +1,12 @@
 
-if (( $# != 1 )); then
-    echo "usage: bash generate_problems.sh <p_values>"
+if (( $# != 2 )); then
+    echo "usage: bash generate_problems.sh <p_vals> <b_vals>"
     exit 1
 fi
 
 PP="$1"
+BB="$2"
+NELEMS=$(echo "$PP" | wc -w)
 
 rm -rf problems || true
 mkdir -p problems
@@ -16,9 +18,11 @@ for templ_name in templates/template_*_dsa_splp; do
     templ_bname=$(basename "$templ_name")
     name=$(python -c "print('_'.join(\"$templ_bname\".split('_')[1:3]))")
     nn=$(python -c "print(\"$templ_bname\".split('_')[1][1:])")
-    for pp in $PP; do
+    for ii in $(seq $NELEMS); do
+        pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
+        bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
+        bb=$((bb*nn))
         prob_name=problems/prob_"$name"
-        bb=$(python -c "print(int(round( int(\"$nn\")*10000*3.141592653589793*0.23879331818300928*round($pp)**(-2.5)  )))")
         ppf=$(printf "%02d" $pp)
         # Create DSA SPLP
         sed -e "s/<<FCOST>>/$bb/g" "$templ_name" > "$prob_name"_p"$ppf"_dsa_splp
@@ -27,7 +31,10 @@ done
 for templ_name in templates/template_*_dsa_pm; do
     templ_bname=$(basename "$templ_name")
     name=$(python -c "print('_'.join(\"$templ_bname\".split('_')[1:3]))")
-    for pp in $PP; do
+    for ii in $(seq $NELEMS); do
+        pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
+        bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
+        bb=$((bb*nn))
         prob_name=problems/prob_"$name"
         ppf=$(printf "%02d" $pp)
         # Create DSA p-median
@@ -38,9 +45,11 @@ for templ_name in templates/template_*_lp_splp; do
     templ_bname=$(basename "$templ_name")
     name=$(python -c "print('_'.join(\"$templ_bname\".split('_')[1:3]))")
     nn=$(python -c "print(\"$templ_bname\".split('_')[1][1:])")
-    for pp in $PP; do
+    for ii in $(seq $NELEMS); do
+        pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
+        bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
+        bb=$((bb*nn))
         prob_name=problems/prob_"$name"
-        bb=$(python -c "print(int(round( int(\"$nn\")*10000*3.141592653589793*0.23879331818300928*round($pp)**(-2.5)  )))")
         ppf=$(printf "%02d" $pp)
         # Create LP SPLP
         sed -e "s/<<FCOST>>/$bb/g" "$templ_name" > "$prob_name"_p"$ppf"_lp_splp
@@ -49,7 +58,10 @@ done
 for templ_name in templates/template_*_lp_pm; do
     templ_bname=$(basename "$templ_name")
     name=$(python -c "print('_'.join(\"$templ_bname\".split('_')[1:3]))")
-    for pp in $PP; do
+    for ii in $(seq $NELEMS); do
+        pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
+        bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
+        bb=$((bb*nn))
         prob_name=problems/prob_"$name"
         ppf=$(printf "%02d" $pp)
         # Create LP p-median

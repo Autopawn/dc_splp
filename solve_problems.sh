@@ -1,9 +1,10 @@
-if (( $# != 1 )); then
-    echo "usage: bash solve_problems.sh <p_values>"
+if (( $# != 0 )); then
+    echo "usage: bash solve_problems.sh"
     exit 1
 fi
 
-# NOTE: should delete problems/
+PP="4 8 12 16"
+BB="400 140 80 50"
 
 read -p "Delete all results first [y/n]? " choice
 case "$choice" in
@@ -12,15 +13,15 @@ case "$choice" in
   * ) echo "Invalid answer!" && exit;;
 esac
 
-QSUBPROCS=4
-QSUBPROCS_FULLVR=2
+QSUBPROCS=2
+QSUBPROCS_FULLVR=1
 
 LOCALPROCS=2
 LOCALPROCS_FULLVR=1
 
-bash _generate_problems.sh "$1"
+bash _generate_problems.sh "$PP" "$BB"
 
-for pp in $1; do
+for pp in $PP; do
 
     qsub -N pm_lpsolve_p"$pp" _solve_lpsolve.sh -F "$pp $QSUBPROCS pm" || \
         bash _solve_lpsolve.sh "$pp" "$LOCALPROCS" "pm"
@@ -43,10 +44,10 @@ for pp in $1; do
         bash _solve_dsa.sh "$pp" "$LOCALPROCS" "splp" "400" "800"
 
     # NOTE: ONLY ONE RANDOMHC
-    maxs=$((pp+3))
-    qsub -N pm_randomhc400_p"$pp" _solve_randomhc.sh -F "$pp $QSUBPROCS pm 400 $maxs" || \
-        bash _solve_randomhc.sh "$pp" "$LOCALPROCS" "pm" "400" "$maxs"
-    qsub -N splp_randomhc400_p"$pp" _solve_randomhc.sh -F "$pp $QSUBPROCS splp 400 $maxs" || \
-        bash _solve_randomhc.sh "$pp" "$LOCALPROCS" "splp" "400" "$maxs"
+    # maxs=$((pp+3))
+    # qsub -N pm_randomhc400_p"$pp" _solve_randomhc.sh -F "$pp $QSUBPROCS pm 400 $maxs" || \
+    #     bash _solve_randomhc.sh "$pp" "$LOCALPROCS" "pm" "400" "$maxs"
+    # qsub -N splp_randomhc400_p"$pp" _solve_randomhc.sh -F "$pp $QSUBPROCS splp 400 $maxs" || \
+    #     bash _solve_randomhc.sh "$pp" "$LOCALPROCS" "splp" "400" "$maxs"
 
 done
