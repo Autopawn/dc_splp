@@ -2,6 +2,10 @@ tmp
 problems
 templates
 results*
+splp_*.e*
+pm_*.e*
+splp_*.o*
+pm_*.o*
 
 tests
 vgcore.*
