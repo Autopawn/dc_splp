@@ -43,7 +43,7 @@ function add_next_job {
     # if still jobs to do then add one
     if [[ $index -lt ${#todo_array[*]} ]]
     then
-        echo Adding job: ${todo_array[$index]}
+        echo Adding job: $randomhcname ${todo_array[$index]}
         do_job ${todo_array[$index]} &
         index=$(($index+1))
     fi
@@ -57,27 +57,49 @@ function do_job {
     bbname=${bname%_$ext}_"$prob"
     solname="$folder"/"$bname"_sol
 
-    # Solve
-    ./bin/randomhc "$mult" "$maxsize" 1 "$fname" "$solname"
+    # Check if already exists:
+    grep -q "$bbname" "$folder"/nfacs
+    in_nfacs=$?
+    grep -q "$bbname" "$folder"/times
+    in_times=$?
+    grep -q "$bbname" "$folder"/vals
+    in_vals=$?
+    grep -q "$bbname" "$folder"/fsols
+    in_fsols=$?
 
-    # Get number of facilities
-    cat "$solname" | grep "Facilities:" | awk '{print $NF}' | \
-        sed -e "s/^/$bbname /" >> "$folder"/nfacs
+    if [[ $in_nfacs -eq 0 && $in_times -eq 0 && $in_vals -eq 0 && $in_fsols -eq 0 ]]; then
+        echo "SKIPPING: $folder $bbname already solved."
+    else
+        echo "SOLVING : $folder $bbname not found."
 
-    # Get value of objective function
-    cat "$solname" | grep "Value:" | awk '{print $NF}' | sed -e "s/-//" | \
-        sed -e "s/^/$bbname /" >> "$folder"/vals
+        # Clear other files:
+        sed -e s/$bbname//g -i "$folder"/nfacs
+        sed -e s/$bbname//g -i "$folder"/times
+        sed -e s/$bbname//g -i "$folder"/vals
+        sed -e s/$bbname//g -i "$folder"/fsols
 
-    # Get time
-    cat "$solname" | grep "Time:" | awk '{print $NF}' | \
-        sed -e "s/^/$bbname /" >> "$folder"/times
+        # Solve
+        ./bin/randomhc "$mult" "$maxsize" 1 "$fname" "$solname"
 
-    # Get final solutions
-    cat "$solname" | grep "Final_solutions:" | awk '{print $NF}' | \
-        sed -e "s/^/$bbname /" >> "$folder"/fsols
+        # Get number of facilities
+        cat "$solname" | grep "Facilities:" | awk '{print $NF}' | \
+            sed -e "s/^/$bbname /" >> "$folder"/nfacs
 
-    # Delete solution:
-    rm "$solname"
+        # Get value of objective function
+        cat "$solname" | grep "Value:" | awk '{print $NF}' | sed -e "s/-//" | \
+            sed -e "s/^/$bbname /" >> "$folder"/vals
+
+        # Get time
+        cat "$solname" | grep "Time:" | awk '{print $NF}' | \
+            sed -e "s/^/$bbname /" >> "$folder"/times
+
+        # Get final solutions
+        cat "$solname" | grep "Final_solutions:" | awk '{print $NF}' | \
+            sed -e "s/^/$bbname /" >> "$folder"/fsols
+
+        # Delete solution:
+        rm "$solname"
+    fi
 }
 
 set -o monitor

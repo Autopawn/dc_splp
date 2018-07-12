@@ -6,6 +6,13 @@ fi
 PP="4 8 12 16"
 BB="400 140 80 50"
 
+read -p "Delete all problems first [y/n]? " choice
+case "$choice" in
+  y|Y ) echo "Deleting them." && rm -rf problems;;
+  n|N ) echo "Not deleting them.";;
+  * ) echo "Invalid answer!" && exit;;
+esac
+
 read -p "Delete all results first [y/n]? " choice
 case "$choice" in
   y|Y ) echo "Deleting them." && rm -rf results;;
@@ -19,7 +26,9 @@ QSUBPROCS_FULLVR=1
 LOCALPROCS=2
 LOCALPROCS_FULLVR=1
 
-bash _generate_problems.sh "$PP" "$BB"
+if [ ! -d problems ]; then
+    bash _generate_problems.sh "$PP" "$BB"
+fi
 
 for pp in $PP; do
 

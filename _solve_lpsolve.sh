@@ -33,7 +33,7 @@ function add_next_job {
     # if still jobs to do then add one
     if [[ $index -lt ${#todo_array[*]} ]]
     then
-        echo Adding job: ${todo_array[$index]}
+        echo Adding job: lpsolve ${todo_array[$index]}
         do_job ${todo_array[$index]} &
         index=$(($index+1))
     fi
@@ -48,23 +48,44 @@ function do_job {
     solname="$folder"/"$bname"_sol
     timename="$folder"/"$bname"_time
 
-    # Solve
-    { time -p $lp_solve "$fname" > "$solname"; } 2> "$timename"
+    # Check if already exists:
+    grep -q "$bbname" "$folder"/nfacs
+    in_nfacs=$?
+    grep -q "$bbname" "$folder"/times
+    in_times=$?
+    grep -q "$bbname" "$folder"/vals
+    in_vals=$?
 
-    # Get number of facilities
-    cat "$solname" | grep "X" | grep " 1" | wc -l | \
+    if [[ $in_nfacs -eq 0 && $in_times -eq 0 && $in_vals -eq 0 ]]; then
+        echo "SKIPPING: $folder $bbname already solved."
+    else
+        echo "SOLVING : $folder $bbname not found."
+
+        # Clear other files:
+        sed -e s/$bbname//g -i "$folder"/nfacs
+        sed -e s/$bbname//g -i "$folder"/times
+        sed -e s/$bbname//g -i "$folder"/vals
+
+        # Solve:
+        { time -p $lp_solve "$fname" > "$solname"; } 2> "$timename"
+
+        # Get number of facilities
+        cat "$solname" | grep "X" | grep " 1" | wc -l | \
         sed -e "s/^/$bbname /" >> "$folder"/nfacs
 
-    # Get time
-    cat "$timename" | grep "user" | awk '{print $NF}' | \
+        # Get time
+        cat "$timename" | grep "user" | awk '{print $NF}' | \
         sed -e "s/^/$bbname /" >> "$folder"/times
 
-    # # Get value
-    cat "$solname" | grep "objective function:" | awk '{print $NF}' | cut -d'.' -f1 | \
+        # Get value
+        cat "$solname" | grep "objective function:" | awk '{print $NF}' | cut -d'.' -f1 | \
         sed -e "s/^/$bbname /" >> "$folder"/vals
 
-    # Delete solution:
-    rm "$solname" "$timename"
+        # Delete solution:
+        rm "$solname" "$timename"
+
+    fi
+
 }
 
 set -o monitor

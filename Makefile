@@ -10,26 +10,26 @@ results:
 	mkdir -p results
 
 dsa: bin
-	cd src; gcc -std=c99 -O -Wall -lm $(targets) main.c \
-		-o ../bin/dsa
+	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
+		-o ../bin/dsa -lm
 dsa_ls: bin
-	cd src; gcc -std=c99 -O -Wall -lm $(targets) main.c \
-		-D LOCAL_SEARCH -o ../bin/dsa_ls
+	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -o ../bin/dsa_ls -lm
 randomhc: bin
-		cd src; gcc -std=c99 -O -Wall -lm $(targets) mainhc.c \
-		-o ../bin/randomhc
+		cd src; gcc -std=c99 -O -Wall $(targets) mainhc.c \
+		-o ../bin/randomhc -lm
 dsa_hausdorff: bin
-	cd src; gcc -std=c99 -O -Wall -lm $(targets) main.c \
-		-D HAUSDORFF -o ../bin/dsa_hausdorff
+	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
+		-D HAUSDORFF -o ../bin/dsa_hausdorff -lm
 dsa_test: results test_problem
-	cd src; gcc -std=c99 -O -g -Wall -lm $(targets) main.c \
-		-D LOCAL_SEARCH -D DEBUG -o ../bin/dsa
+	cd src; gcc -std=c99 -O -g -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D DEBUG -o ../bin/dsa -lm
 	valgrind --tool=memcheck --leak-check=yes ./bin/dsa 1000 100 10 \
 		tests/simple2_dsa results/simple2_dsa.txt
 
 test_problem: tests
 	rm tests/* || true
-    # Create test problem:
+	# Create test problem:
 	python tools/problem_gen.py 20 100 1000 5000 tests/simple
 	# Create version with less facility cost:
 	sed -e 's/+5000 X/ +2500 X/g' tests/simple_lp > tests/simple2_lp
