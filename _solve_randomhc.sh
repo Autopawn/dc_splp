@@ -75,19 +75,19 @@ function do_job {
 
         # Get number of facilities
         cat "$solname" | grep "Facilities:" | awk '{print $NF}' | \
-            sed -e "s/^/$bbname /" >> "$folder"/nfacs_p/"$bbname"
+            sed -e "s/^/$bbname /" > "$folder"/nfacs_p/"$bbname"
 
         # Get value of objective function
         cat "$solname" | grep "Value:" | awk '{print $NF}' | sed -e "s/-//" | \
-            sed -e "s/^/$bbname /" >> "$folder"/vals_p/"$bbname"
+            sed -e "s/^/$bbname /" > "$folder"/vals_p/"$bbname"
 
         # Get time
         cat "$solname" | grep "Time:" | awk '{print $NF}' | \
-            sed -e "s/^/$bbname /" >> "$folder"/times_p/"$bbname"
+            sed -e "s/^/$bbname /" > "$folder"/times_p/"$bbname"
 
         # Get final solutions
         cat "$solname" | grep "Final_solutions:" | awk '{print $NF}' | \
-            sed -e "s/^/$bbname /" >> "$folder"/fsols_p/"$bbname"
+            sed -e "s/^/$bbname /" > "$folder"/fsols_p/"$bbname"
 
         # Delete solution:
         rm "$solname"

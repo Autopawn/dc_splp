@@ -66,15 +66,15 @@ function do_job {
 
         # Get number of facilities
         cat "$solname" | grep "X" | grep " 1" | wc -l | \
-        sed -e "s/^/$bbname /" >> "$folder"/nfacs_p/"$bbname"
+        sed -e "s/^/$bbname /" > "$folder"/nfacs_p/"$bbname"
 
         # Get time
         cat "$timename" | grep "user" | awk '{print $NF}' | \
-        sed -e "s/^/$bbname /" >> "$folder"/times_p/"$bbname"
+        sed -e "s/^/$bbname /" > "$folder"/times_p/"$bbname"
 
         # Get value
         cat "$solname" | grep "objective function:" | awk '{print $NF}' | cut -d'.' -f1 | \
-        sed -e "s/^/$bbname /" >> "$folder"/vals_p/"$bbname"
+        sed -e "s/^/$bbname /" > "$folder"/vals_p/"$bbname"
 
         # Delete solution:
         rm "$solname" "$timename"
