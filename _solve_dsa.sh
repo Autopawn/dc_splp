@@ -46,7 +46,7 @@ mkdir -p "$hcfolder"/times_p
 mkdir -p "$hcfolder"/vals_p
 mkdir -p "$hcfolder"/fsols_p
 
-todo_array=($(find problems/prob_*_p"$ppf"_"$ext" -type f)) # places output into an array
+todo_array=$(find problems/prob_*_p"$ppf"_"$ext" -type f)
 
 function do_job {
     fname="$1"
