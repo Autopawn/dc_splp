@@ -1,17 +1,16 @@
 #!/bin/bash -e
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
-#PBS mem=30gb
+#PBS mem=20gb
 
-# usage: bash _solve_lpsolve.sh <p> <jobs> (pm|splp)
+# usage: bash _solve_lpsolve.sh <jobid> <jobs> <p> (pm|splp)
 
 #parallelization using: https://stackoverflow.com/a/6594537/4386784
 
-ppf=$(printf "%02d" $1)
+ppf=$(printf "%02d" $3)
 
+CURRENT_JOB="$1"
 MAX_JOBS="$2"
-
-index=0
 
 # Tunning for the HPC cluster:
 if [ -n "${PBS_O_WORKDIR+1}" ]; then
@@ -21,23 +20,15 @@ else
     export lp_solve="lp_solve"
 fi
 
-prob="$3"
+prob="$4"
 ext=lp_"$prob"
 folder=results/"$prob"_lpsolve
 
-mkdir -p "$folder"
+mkdir -p "$folder"/nfacs_p
+mkdir -p "$folder"/times_p
+mkdir -p "$folder"/vals_p
 
 todo_array=($(find problems/prob_*_p"$ppf"_"$ext" -type f)) # places output into an array
-
-function add_next_job {
-    # if still jobs to do then add one
-    if [[ $index -lt ${#todo_array[*]} ]]
-    then
-        echo Adding job: lpsolve ${todo_array[$index]}
-        do_job ${todo_array[$index]} &
-        index=$(($index+1))
-    fi
-}
 
 function do_job {
     fname="$1"
@@ -62,6 +53,10 @@ function do_job {
         echo "SOLVING : $folder $bbname not found."
 
         # Clear other files:
+        rm "$folder"/nfacs_p/"$bbname" || true
+        rm "$folder"/times_p/"$bbname" || true
+        rm "$folder"/vals_p/"$bbname"  || true
+
         sed -e s/$bbname//g -i "$folder"/nfacs
         sed -e s/$bbname//g -i "$folder"/times
         sed -e s/$bbname//g -i "$folder"/vals
@@ -71,15 +66,15 @@ function do_job {
 
         # Get number of facilities
         cat "$solname" | grep "X" | grep " 1" | wc -l | \
-        sed -e "s/^/$bbname /" >> "$folder"/nfacs
+        sed -e "s/^/$bbname /" >> "$folder"/nfacs_p/"$bbname"
 
         # Get time
         cat "$timename" | grep "user" | awk '{print $NF}' | \
-        sed -e "s/^/$bbname /" >> "$folder"/times
+        sed -e "s/^/$bbname /" >> "$folder"/times_p/"$bbname"
 
         # Get value
         cat "$solname" | grep "objective function:" | awk '{print $NF}' | cut -d'.' -f1 | \
-        sed -e "s/^/$bbname /" >> "$folder"/vals
+        sed -e "s/^/$bbname /" >> "$folder"/vals_p/"$bbname"
 
         # Delete solution:
         rm "$solname" "$timename"
@@ -88,17 +83,10 @@ function do_job {
 
 }
 
-set -o monitor
-# run background processes in a separate processes
-trap add_next_job CHLD
-# execute add_next_job when we receive a child complete signal
-
-# add initial set of jobs
-while [[ $index -lt $MAX_JOBS ]]
-do
-    add_next_job
+index=0
+for jobname in $todo_array; do
+    if [ $((index % MAX_JOBS)) -eq $CURRENT_JOB ]; then
+        do_job "$jobname"
+    fi
+    index=$((index+1))
 done
-
-# wait for all jobs to complete
-wait
-echo "done!"

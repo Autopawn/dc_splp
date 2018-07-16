@@ -83,18 +83,20 @@ for measure in measures:
                 for x in xs:
                     vals = values[prob][pp][strat][x].values()
                     if len(vals)!=REQUIRED_VALS:
-                        xs_removed.append(x)
                         print("Warning: %s %s %s %s %s has %d/%d values."%(measure,prob,pp,strat,x,len(vals),REQUIRED_VALS))
-                    else:
-                        yval = np.mean(vals)
-                        if measure=="vals":
-                            if strat==lpsolve_name:
-                                lpsolve_vals[x] = yval
-                            if x not in lpsolve_vals:
-                                xs_removed.append(x)
-                                continue
-                            yval /= lpsolve_vals[x]
-                        ys.append(yval)
+                    if len(vals)<REQUIRED_VALS/2:
+                        print("Ignoring!")
+                        xs_removed.append(x)
+                        continue
+                    yval = np.mean(vals)
+                    if measure=="vals":
+                        if strat==lpsolve_name:
+                            lpsolve_vals[x] = yval
+                        if x not in lpsolve_vals:
+                            xs_removed.append(x)
+                            continue
+                        yval /= lpsolve_vals[x]
+                    ys.append(yval)
                 for x in xs_removed:
                     xs.remove(x)
                 if len(ys)==0: continue

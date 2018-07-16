@@ -6,6 +6,8 @@ fi
 PP="4 8 12 16"
 BB="400 140 80 50"
 
+bash merge_results.sh
+
 read -p "Delete all problems first [y/n]? " choice
 case "$choice" in
   y|Y ) echo "Deleting them." && rm -rf problems;;
@@ -20,43 +22,66 @@ case "$choice" in
   * ) echo "Invalid answer!" && exit;;
 esac
 
-QSUBPROCS=2
-QSUBPROCS_FULLVR=1
-
+QSUBPROCS=3
 LOCALPROCS=2
-LOCALPROCS_FULLVR=1
 
 if [ ! -d problems ]; then
     bash _generate_problems.sh "$PP" "$BB"
 fi
 
 for pp in $PP; do
+    hash qsub
 
-    qsub -N pm_lpsolve_p"$pp" _solve_lpsolve.sh -F "$pp $QSUBPROCS pm" || \
-        bash _solve_lpsolve.sh "$pp" "$LOCALPROCS" "pm"
-    qsub -N splp_lpsolve_p"$pp" _solve_lpsolve.sh -F "$pp $QSUBPROCS splp" || \
-        bash _solve_lpsolve.sh "$pp" "$LOCALPROCS" "splp"
+    if [ $? -eq 0 ]; then
 
-    qsub -N pm_dsa50_p"$pp" _solve_dsa.sh -F "$pp $QSUBPROCS_FULLVR pm 50" || \
-        bash _solve_dsa.sh "$pp" "$LOCALPROCS_FULLVR" "pm" "50"
-    qsub -N splp_dsa50_p"$pp" _solve_dsa.sh -F "$pp $QSUBPROCS_FULLVR splp 50" || \
-        bash _solve_dsa.sh "$pp" "$LOCALPROCS_FULLVR" "splp" "50"
+        for proct in $(seq $QSUBPROCS); do
+            proc=$((proct-1))
 
-    qsub -N pm_dsa200vr400_p"$pp" _solve_dsa.sh -F "$pp $QSUBPROCS pm 200 400" || \
-        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "pm" "200" "400"
-    qsub -N splp_dsa200vr400_p"$pp" _solve_dsa.sh -F "$pp $QSUBPROCS splp 200 400" || \
-        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "splp" "200" "400"
+            qsub -N pm_lps_"$pp"_"$proc" _solve_lpsolve.sh \
+                -F "$proc $QSUBPROCS $pp pm"
 
-    qsub -N pm_dsa400vr800_p"$pp" _solve_dsa.sh -F "$pp $QSUBPROCS pm 400 800" || \
-        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "pm" "400" "800"
-    qsub -N splp_dsa400vr800_p"$pp" _solve_dsa.sh -F "$pp $QSUBPROCS splp 400 800" || \
-        bash _solve_dsa.sh "$pp" "$LOCALPROCS" "splp" "400" "800"
+            qsub -N sp_lps_"$pp"_"$proc" _solve_lpsolve.sh \
+                -F "$proc $QSUBPROCS $pp splp"
 
-    # NOTE: ONLY ONE RANDOMHC
-    # maxs=$((pp+3))
-    # qsub -N pm_randomhc400_p"$pp" _solve_randomhc.sh -F "$pp $QSUBPROCS pm 400 $maxs" || \
-    #     bash _solve_randomhc.sh "$pp" "$LOCALPROCS" "pm" "400" "$maxs"
-    # qsub -N splp_randomhc400_p"$pp" _solve_randomhc.sh -F "$pp $QSUBPROCS splp 400 $maxs" || \
-    #     bash _solve_randomhc.sh "$pp" "$LOCALPROCS" "splp" "400" "$maxs"
+            qsub -N pm_d050_"$pp"_"$proc" _solve_dsa.sh \
+                -F "$proc $QSUBPROCS $pp pm 50"
+
+            qsub -N sp_d050_"$pp"_"$proc" _solve_dsa.sh \
+                -F "$proc $QSUBPROCS $pp splp 50"
+
+            qsub -N pm_d200_"$pp"_"$proc" _solve_dsa.sh \
+                -F "$proc $QSUBPROCS $pp pm 200 400"
+
+            qsub -N sp_d200_"$pp"_"$proc" _solve_dsa.sh \
+                -F "$proc $QSUBPROCS $pp splp 200 400"
+
+            qsub -N pm_d400_"$pp"_"$proc" _solve_dsa.sh \
+                -F "$proc $QSUBPROCS $pp pm 400 800"
+
+            qsub -N sp_d400_"$pp"_"$proc" _solve_dsa.sh \
+                -F "$proc $QSUBPROCS $pp splp 400 800"
+
+        done
+
+    else
+
+        for proct in $(seq $LOCALPROCS); do
+            proc=$((proct-1))
+
+            bash _solve_lpsolve.sh "$proc" "$LOCALPROCS" "$pp" "pm"
+            bash _solve_lpsolve.sh "$proc" "$LOCALPROCS" "$pp" "splp"
+
+            bash _solve_dsa.sh "$proc" "$LOCALPROCS" "$pp" "pm" "50"
+            bash _solve_dsa.sh "$proc" "$LOCALPROCS" "$pp" "splp" "50"
+
+            bash _solve_dsa.sh "$proc" "$LOCALPROCS" "$pp" "pm" "200" "400"
+            bash _solve_dsa.sh "$proc" "$LOCALPROCS" "$pp" "splp" "200" "400"
+
+            bash _solve_dsa.sh "$proc" "$LOCALPROCS" "$pp" "pm" "400" "800"
+            bash _solve_dsa.sh "$proc" "$LOCALPROCS" "$pp" "splp" "400" "800"
+
+        done
+
+    fi
 
 done
