@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
 #PBS mem=20gb
@@ -67,7 +67,16 @@ function do_job {
     grep -q "$bbname" "$folder"/fsols
     in_fsols=$?
 
-    if [[ $in_nfacs -eq 0 && $in_times -eq 0 && $in_vals -eq 0 && $in_fsols -eq 0 ]]; then
+    grep -q "$bbname" "$hcfolder"/nfacs
+    in_nfacs_hc=$?
+    grep -q "$bbname" "$hcfolder"/times
+    in_times_hc=$?
+    grep -q "$bbname" "$hcfolder"/vals
+    in_vals_hc=$?
+    grep -q "$bbname" "$hcfolder"/fsols
+    in_fsols_hc=$?
+
+    if [[ $in_nfacs -eq 0 && $in_times -eq 0 && $in_vals -eq 0 && $in_fsols -eq 0 && $in_nfacs_hc -eq 0 && $in_times_hc -eq 0 && $in_vals_hc -eq 0 && $in_fsols_hc -eq 0 ]]; then
         echo "SKIPPING: $folder $bbname already solved."
     else
         echo "SOLVING : $folder $bbname not found."

@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/bin/bash
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
 #PBS mem=20gb
