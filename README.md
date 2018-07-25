@@ -1,4 +1,4 @@
-# DSA SPLP and p-median problem solver.
+# DC SPLP and p-median problem solver.
 
 Create 100 experiment templates for $n \in {100,200,300,400,500}$:
 ```bash
