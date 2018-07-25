@@ -10,7 +10,7 @@ bash merge_results.sh
 
 read -p "Delete all problems first [y/n]? " choice
 case "$choice" in
-  y|Y ) echo "Deleting them." && rm -rf problems;;
+  y|Y ) echo "Deleting them and creating new ones." && rm -rf problems;;
   n|N ) echo "Not deleting them.";;
   * ) echo "Invalid answer!" && exit;;
 esac

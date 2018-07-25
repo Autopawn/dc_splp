@@ -5,7 +5,7 @@ Create 100 experiment templates for $n \in {100,200,300,400,500}$:
 bash generate_templates.sh "100 200 300 400 500" 100
 ```
 
-Solve them using several algorithms:
+Solve them using all the algorithms:
 ```bash
-bash solve_problems.sh 4
+bash solve_problems.sh
 ```
