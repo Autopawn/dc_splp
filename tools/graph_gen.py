@@ -8,13 +8,17 @@ measures={
     "fsols": "Number of final solutions",
     "nfacs": "Instalations in the best solution",
     "vals": "Value of best solution found",
-    "times": "Required computation time",
+    "times": "Required computation time [s]",
 }
 
 problems={
     "splp":"SPLP, $p'$=",
     "pm":"$p$-median, $p$=",
 }
+
+transf={
+    "pm":"$p$-median",
+    "splp":"SPLP"}
 
 STRAT_COLORS={
     "lpsolve":     (0.0, 0.0, 0.0),
@@ -72,7 +76,8 @@ for measure in measures:
                     values[prob][pp][strat] = {}
                 if nn not in values[prob][pp][strat]:
                     values[prob][pp][strat][nn] = {}
-                values[prob][pp][strat][nn][ii] = val
+                # NOTE: I had to add 1 because some lp results may end in .99999999
+                values[prob][pp][strat][nn][ii] = val+(1*"lpsolve"in strat)
             fil.close()
 
     # Tabulate results:
@@ -94,7 +99,8 @@ for measure in measures:
                         for ii in values[prob][pp][lpsolve_name][nn].keys():
                             if ii in values[prob][pp][strat][nn]:
                                 proportions[ii] = values[prob][pp][strat][nn][ii]/values[prob][pp][lpsolve_name][nn][ii]
-                                if values[prob][pp][strat][nn][ii]-0.24 <= values[prob][pp][lpsolve_name][nn][ii]:
+                                if proportions[ii]<1.0: proportions[ii]=1.0
+                                if values[prob][pp][strat][nn][ii] <= values[prob][pp][lpsolve_name][nn][ii]:
                                     completes += 1
                                     # assert(values[prob][pp][strat][nn][ii] >= values[prob][pp][lpsolve_name][nn][ii])
                     mean = np.mean(values[prob][pp][strat][nn].values())
@@ -108,8 +114,13 @@ for measure in measures:
     if PLOTSTUFF:
         # Plot means of values:
         for prob in values:
-            for pp in values[prob]:
-                plt.figure(figsize=(4,3))
+            fig, axs = plt.subplots(nrows=1,ncols=len(values[prob].keys()),sharex=True,sharey=True,figsize=(14,5))
+            fig.suptitle("%s"%(measures[measure]))
+            i = 0
+            for pp in sorted(values[prob].keys()):
+                ax = axs[i]
+                i += 1
+                # plt.figure(figsize=(4,3))
                 maxy = -np.inf
                 miny = np.inf
                 strats = sorted(values[prob][pp].keys())
@@ -119,7 +130,8 @@ for measure in measures:
                 if lpsolve_name in strats:
                     strats.remove(lpsolve_name)
                     strats.insert(0,lpsolve_name)
-                for strat in strats:
+                strat_k = [x for x in strat_keys[prob] if '5' in x] + [x for x in strat_keys[prob] if '5' not in x]
+                for strat in strat_k:
                     xs = sorted(list(values[prob][pp][strat].keys()))
                     xs_removed = []
                     ys = []
@@ -144,20 +156,24 @@ for measure in measures:
                         xs.remove(x)
                     if len(ys)==0: continue
                     stratname = '_'.join(strat.split('_')[1:])
-                    if (strat+"hc") not in strats:
-                        plt.plot(xs,ys,'o-',label=stratname,color=STRAT_COLORS[stratname])
+                    # if (strat+"hc") not in strats:
+                    if True or (strat+"hc") not in strats:
+                        dispname = "dc"+stratname[3:] if stratname[:3]=="dsa" else stratname
+                        ax.plot(xs,ys,'o-',label=dispname,color=STRAT_COLORS[stratname])
                         some_plot = True
                         maxy = np.maximum(maxy,np.max(ys))
                         miny = np.minimum(miny,np.max(ys))
                 #
                 probname = problems[prob] if prob in problems else prob
-                plt.title("%s for %s%d"%(measures[measure],probname,pp))
+                ax.set_title("%s%d"%(probname,pp))
                 if some_plot:
-                    plt.ylim((0 if measure!="vals" else miny,maxy))
-                plt.legend()
-                plt.show()
+                    ax.set_ylim((0 if measure!="vals" else miny,maxy))
+            fig.legend(loc='upper center', bbox_to_anchor=(0.5, 0.85), ncol=4, fancybox=True , shadow=True)
+            fig.show()
 
     measure_vals[measure] = values
+
+raw_input("Press key.")
 
 tablehead = """
 \\begin{table}
@@ -166,8 +182,6 @@ Results for %s with $p=%d$:
 \\scriptsize
 \\begin{tabular}{ | l r r r r | }
     \\hline & $|\\hat{P}|$ & $|R|$ & Relative cost & Opt. sols."""
-
-transf={"pm":"$p$-median","splp":"SPLP"}
 
 for prob in values:
     lpsolve_name = prob+"_lpsolve"
@@ -189,10 +203,12 @@ for prob in values:
                     radii = []
                     for ii in measure_vals["vals"][prob][pp][strathc][nn]:
                         radii.append(measure_vals["vals"][prob][pp][strathc][nn][ii]/measure_vals["vals"][prob][pp][lpsolve_name][nn][ii])
-                        optimals += measure_vals["vals"][prob][pp][strathc][nn][ii] == measure_vals["vals"][prob][pp][lpsolve_name][nn][ii]
+                        if radii[-1]<1.0: radii[-1] = 1.0
+                        optimals += measure_vals["vals"][prob][pp][strathc][nn][ii] <= measure_vals["vals"][prob][pp][lpsolve_name][nn][ii]
 
+                    dispname = "dc"+stratname[3:] if stratname[:3]=="dsa" else stratname
                     sep = "\\hline" if first else ""
-                    print("    \\\\ %6s %15s & $%7.2f$ & $%7.2f$ & $%8.6f \\pm %8.6f$ & $%3d$ "%(sep,stratname,np.mean(fsols),np.mean(fsolshc),np.mean(radii),np.std(radii),optimals) )
+                    print("    \\\\ %6s %15s & $%7.2f$ & $%7.2f$ & $%8.6f \\pm %8.6f$ & $%3d$ "%(sep,dispname,np.mean(fsols),np.mean(fsolshc),np.mean(radii),np.std(radii),optimals) )
                     first = False
         #
         print("\\\\ \\hline")
