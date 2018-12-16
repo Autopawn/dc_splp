@@ -53,9 +53,9 @@ function do_job {
         echo "SOLVING : $folder $bbname not found."
 
         # Clear other files:
-        rm "$folder"/nfacs_p/"$bbname" || true
-        rm "$folder"/times_p/"$bbname" || true
-        rm "$folder"/vals_p/"$bbname"  || true
+        rm "$folder"/nfacs_p/"$bbname" 2> /dev/null
+        rm "$folder"/times_p/"$bbname" 2> /dev/null
+        rm "$folder"/vals_p/"$bbname"  2> /dev/null
 
         sed -e s/$bbname//g -i "$folder"/nfacs
         sed -e s/$bbname//g -i "$folder"/times
@@ -73,7 +73,7 @@ function do_job {
         sed -e "s/^/$bbname /" > "$folder"/times_p/"$bbname"
 
         # Get value
-        cat "$solname" | grep "objective function:" | awk '{print $NF}' | cut -d'.' -f1 | \
+        cat "$solname" | grep "objective function:" | awk '{print $NF}' | \
         sed -e "s/^/$bbname /" > "$folder"/vals_p/"$bbname"
 
         # Delete solution:

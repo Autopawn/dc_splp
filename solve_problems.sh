@@ -3,9 +3,11 @@ if (( $# != 0 )); then
     exit 1
 fi
 
+# Values for p and b
 PP="4 8 12 16"
-BB="400 140 80 50"
+BB="256 90 50 32"
 
+# Just in case, merge results now.
 bash merge_results.sh
 
 read -p "Delete all problems first [y/n]? " choice

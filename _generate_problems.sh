@@ -21,7 +21,7 @@ for templ_name in templates/template_*_dsa_splp; do
     for ii in $(seq $NELEMS); do
         pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
         bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
-        bb=$((bb*nn))
+        bb=$((bb*10#$nn))
         prob_name=problems/prob_"$name"
         ppf=$(printf "%02d" $pp)
         # Create DSA SPLP
@@ -34,7 +34,7 @@ for templ_name in templates/template_*_dsa_pm; do
     for ii in $(seq $NELEMS); do
         pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
         bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
-        bb=$((bb*nn))
+        bb=$((bb*10#$nn))
         prob_name=problems/prob_"$name"
         ppf=$(printf "%02d" $pp)
         # Create DSA p-median
@@ -48,7 +48,7 @@ for templ_name in templates/template_*_lp_splp; do
     for ii in $(seq $NELEMS); do
         pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
         bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
-        bb=$((bb*nn))
+        bb=$((bb*10#$nn))
         prob_name=problems/prob_"$name"
         ppf=$(printf "%02d" $pp)
         # Create LP SPLP
@@ -61,7 +61,7 @@ for templ_name in templates/template_*_lp_pm; do
     for ii in $(seq $NELEMS); do
         pp=$(echo $PP | tr " " "\n"|sed -n "$ii"'p')
         bb=$(echo $BB | tr " " "\n"|sed -n "$ii"'p')
-        bb=$((bb*nn))
+        bb=$((bb*10#$nn))
         prob_name=problems/prob_"$name"
         ppf=$(printf "%02d" $pp)
         # Create LP p-median

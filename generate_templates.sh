@@ -7,11 +7,10 @@ fi
 NPROBS="$2"
 NN="$1"
 
-rm -rf templates || true
-rm -rf problems || true
-rm -rf results || true
+rm -rf templates 2>/dev/null
+rm -rf problems 2>/dev/null
+rm -rf results 2>/dev/null
 mkdir -p templates
-
 
 NAMEFORMAT="n%04d_i%04d"
 

@@ -82,14 +82,14 @@ function do_job {
         echo "SOLVING : $folder $bbname not found."
 
         # Clear other files:
-        rm "$folder"/nfacs_p/"$bbname" || true
-        rm "$folder"/times_p/"$bbname" || true
-        rm "$folder"/vals_p/"$bbname"  || true
-        rm "$folder"/fsols_p/"$bbname" || true
-        rm "$hcfolder"/nfacs_p/"$bbname" || true
-        rm "$hcfolder"/times_p/"$bbname" || true
-        rm "$hcfolder"/vals_p/"$bbname"  || true
-        rm "$hcfolder"/fsols_p/"$bbname" || true
+        rm "$folder"/nfacs_p/"$bbname" 2> /dev/null
+        rm "$folder"/times_p/"$bbname" 2> /dev/null
+        rm "$folder"/vals_p/"$bbname"  2> /dev/null
+        rm "$folder"/fsols_p/"$bbname" 2> /dev/null
+        rm "$hcfolder"/nfacs_p/"$bbname" 2> /dev/null
+        rm "$hcfolder"/times_p/"$bbname" 2> /dev/null
+        rm "$hcfolder"/vals_p/"$bbname"  2> /dev/null
+        rm "$hcfolder"/fsols_p/"$bbname" 2> /dev/null
 
         # Solve
         ./bin/dsa_ls "$pz" "$vr" 1 "$fname" "$solname" "$hcsolname"
