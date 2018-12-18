@@ -7,6 +7,12 @@
 #include <string.h>
 #include <assert.h>
 
+#if THREADS>0
+    #include <pthread.h>
+    #include <semaphore.h>
+#endif
+
+
 #define MAX_FACILITIES 500
 #define MAX_CLIENTS 500
 #define MAX_SOL_SIZE 20

@@ -58,10 +58,10 @@ typedef struct {
     pthread_mutex_t *heap_mutex;
     dissimpair *heap;
     int *heap_n_pairs;
-        // Concurrent access to prev and next solution lists to build reposition pairs.
-        sem_t *thread_sem;
-        sem_t *complete_sem; // Inform that thread has terminated with its reposition pairs.
-        int *terminated;
+    // Concurrent access to prev and next solution lists to build reposition pairs.
+    sem_t *thread_sem;
+    sem_t *complete_sem; // Inform that thread has terminated with its reposition pairs.
+    int *terminated;
     const int *prev_sols;
     const int *next_sols;
     // Solutions (read only!).
@@ -69,10 +69,10 @@ typedef struct {
     const solution **sols;
     int n_sols;
     int vision_range;
-} thread_args;
+} reduce_thread_args;
 
-void *thread_execution(void *arg){
-    thread_args *args = (thread_args *) arg;
+void *reduce_thread_execution(void *arg){
+    reduce_thread_args *args = (reduce_thread_args *) arg;
 
     // Help building initial set of dissimilitude pairs
     dissimpair *pairs = safe_malloc(sizeof(dissimpair)*args->vision_range);
@@ -188,7 +188,7 @@ void reduce_solutions(const problem *prob,
     pthread_t *threads = safe_malloc(sizeof(pthread_t)*THREADS);
     sem_t *t_sems = safe_malloc(sizeof(pthread_mutex_t)*THREADS);
     sem_t *c_sems = safe_malloc(sizeof(pthread_mutex_t)*THREADS);
-    thread_args *targs = safe_malloc(sizeof(thread_args)*THREADS);
+    reduce_thread_args *targs = safe_malloc(sizeof(reduce_thread_args)*THREADS);
     int terminated = 0; // NOTE: Only access before threads are waken.
     int *prev_sols = safe_malloc(sizeof(int)*vision_range);
     int *next_sols = safe_malloc(sizeof(int)*vision_range);
@@ -213,7 +213,7 @@ void reduce_solutions(const problem *prob,
         targs[i].n_sols = *n_sols;
         targs[i].vision_range = vision_range;
         //
-        int rc = pthread_create(&threads[i],NULL,thread_execution,&targs[i]);
+        int rc = pthread_create(&threads[i],NULL,reduce_thread_execution,&targs[i]);
         if(rc){
             printf("Error %d on thread creation\n",rc);
             exit(1);

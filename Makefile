@@ -1,6 +1,6 @@
 targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
-THREADS = 0
+THREADS = 4
 
 all: dsa dsa_ls dsa_hausdorff randomhc
 
@@ -28,7 +28,6 @@ dsa_profile: dsa_ls tests/simple_pos
 	valgrind --tool=callgrind --callgrind-out-file=tests/callgrind.out.timetest \
 		./bin/dsa_ls 100 200 10 tests/prob_p5_dsa_pm tests/res_dsa.txt tests/res_dsa_ls.txt
 	callgrind_annotate --tree=caller tests/callgrind.out.timetest > tests/parallel_$(THREADS).txt
-
 tests/simple_pos: tests
 	rm -rf tests || true
 	mkdir -p tests
