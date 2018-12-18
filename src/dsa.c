@@ -108,7 +108,7 @@ void local_search_solutions(problem* prob, solution **sols, int *n_sols){
     // Detect and delete repeated solutions:
     int n_final = 1;
     for(int i=1;i<*n_sols;i++){
-        if(solution_cmp(&sols[n_final],&sols[i])!=0){
+        if(solution_cmp(&sols[n_final-1],&sols[i])!=0){
             *sols[n_final] = *sols[i];
             n_final++;
         }
