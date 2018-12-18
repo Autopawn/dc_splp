@@ -46,6 +46,88 @@ void heap_add(dissimpair *heap, int *size, dissimpair val){
 }
 
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+// MULTITHREAD DISSIMILITUDE COMPUTATION
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+typedef struct {
+    // Thread id:
+    int thread_id;
+    // Concurrent access to heap.
+    pthread_mutex_t *heap_mutex;
+    dissimpair *heap;
+    int *heap_n_pairs;
+    // Concurrent access to prev and next solution lists to build reposition pairs.
+    sem_t *thread_sem;
+    sem_t *complete_sem; // Inform that thread has terminated with its reposition pairs.
+    int *terminated;
+    const int *prev_sols;
+    const int *next_sols;
+    // Solutions (read only!).
+    const problem *prob;
+    const solution **sols;
+    int n_sols;
+    int vision_range;
+} thread_args;
+
+void *thread_execution(void *arg){
+    thread_args *args = (thread_args *) arg;
+
+    // Help building initial set of dissimilitude pairs
+    dissimpair *pairs = safe_malloc(sizeof(dissimpair)*args->vision_range);
+    int n_pairs = 0;
+    for(int i=args->thread_id;i<args->n_sols;i+=THREADS){
+        for(int j=1;j<=args->vision_range;j++){
+            if(i+j>=args->n_sols) break;
+            // REPLACE
+            pairs[n_pairs].indx_a = i;
+            pairs[n_pairs].indx_b = i+j;
+            pairs[n_pairs].dissim = solution_dissimilitude(args->prob,
+                args->sols[i],args->sols[i+j]);
+            n_pairs += 1;
+        }
+        // Save pairs in the heap
+        pthread_mutex_lock(args->heap_mutex);
+            for(int i=0;i<n_pairs;i++){
+                heap_add(args->heap,args->heap_n_pairs,pairs[i]);
+            }
+        pthread_mutex_unlock(args->heap_mutex);
+        // Delete pairs
+        n_pairs = 0;
+    }
+    free(pairs);
+
+    // Wake when is required to compute new dissimilitudes
+    while(1){
+        sem_post(args->complete_sem);
+        // ---@> Main thread works here.
+        sem_wait(args->thread_sem);
+        assert(args->prev_sols!=NULL);
+        assert(args->next_sols!=NULL);
+        int terminated = *args->terminated;
+        // If the job is done, terminate.
+        if(terminated) break;
+        // Create new pairs
+        for(int i=args->thread_id;i<args->vision_range;i+=THREADS){
+            int pair_a = args->prev_sols[args->vision_range-1-i];
+            int pair_b = args->next_sols[i];
+            if(pair_a!=-1 && pair_b!=-1){
+                // Create the replace node:
+                dissimpair pair;
+                pair.indx_a = pair_a;
+                pair.indx_b = pair_b;
+                pair.dissim = solution_dissimilitude(args->prob,
+                    args->sols[pair_a],args->sols[pair_b]);
+                // Add the new pair to the heap:
+                pthread_mutex_lock(args->heap_mutex);
+                    heap_add(args->heap,args->heap_n_pairs,pair);
+                pthread_mutex_unlock(args->heap_mutex);
+            }
+        }
+    }
+    return NULL;
+}
+
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 // REDUCTION PROCESS
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
@@ -93,78 +175,122 @@ void reduce_solutions(const problem *prob,
     // Heap of dissimilitude pairs
     int n_pairs = 0;
     dissimpair *heap = safe_malloc(sizeof(dissimpair)*2*(*n_sols)*vision_range);
-    // Initial set of dissimilitude pairs
-    for(int i=0;i<*n_sols;i++){
-        for(int j=1;j<=vision_range;j++){
-            if(i+j>=*n_sols) break;
-            dissimpair pair;
-            pair.indx_a = i;
-            pair.indx_b = i+j;
-            pair.dissim = solution_dissimilitude(prob,
-                sols[pair.indx_a],sols[pair.indx_b]);
-            heap_add(heap,&n_pairs,pair);
+    pthread_mutex_t heap_mutex;
+    pthread_mutex_init(&heap_mutex,NULL);
+    //
+    // Create threads:
+    pthread_t *threads = safe_malloc(sizeof(pthread_t)*THREADS);
+    sem_t *t_sems = safe_malloc(sizeof(pthread_mutex_t)*THREADS);
+    sem_t *c_sems = safe_malloc(sizeof(pthread_mutex_t)*THREADS);
+    thread_args *targs = safe_malloc(sizeof(thread_args)*THREADS);
+    int terminated = 0; // NOTE: Only access before threads are waken.
+    int *prev_sols = safe_malloc(sizeof(int)*vision_range);
+    int *next_sols = safe_malloc(sizeof(int)*vision_range);
+    //
+    for(int i=0;i<THREADS;i++){
+        sem_init(&t_sems[i],0,0);
+        sem_init(&c_sems[i],0,0);
+        //
+        targs[i].thread_id = i;
+        targs[i].heap_mutex = &heap_mutex;
+        targs[i].heap = heap;
+        targs[i].heap_n_pairs = &n_pairs;
+        //
+        targs[i].thread_sem = &t_sems[i];
+        targs[i].complete_sem = &c_sems[i];
+        targs[i].terminated = &terminated;
+        targs[i].prev_sols = prev_sols;
+        targs[i].next_sols = next_sols;
+        //
+        targs[i].prob = prob;
+        targs[i].sols = (const solution **) sols; // NOTE: incompatible pointer?
+        targs[i].n_sols = *n_sols;
+        targs[i].vision_range = vision_range;
+        //
+        int rc = pthread_create(&threads[i],NULL,thread_execution,&targs[i]);
+        if(rc){
+            printf("Error %d on thread creation\n",rc);
+            exit(1);
         }
     }
-    // Eliminate as much solutions as required:
+    // Wait for all threads to terminate the last job
+    for(int i=0;i<THREADS;i++){
+        sem_wait(&c_sems[i]);
+    }
+    // ---@> At this point, all initial dissimilitude pairs are complete.
+
+    // Eliminate as many solutions as required:
     int n_eliminate = *n_sols-target_n;
     int elims = 0;
     while(elims<n_eliminate){
-        // Eliminate worst solution of most similar pair
+        // Find most similar pair
+        dissimpair pair;
+        while(1){
+            if(n_pairs==0) break;
+            pair = heap_poll(heap,&n_pairs);
+            if(!discarted[pair.indx_a] && !discarted[pair.indx_b]) break;
+        }
         if(n_pairs==0) break;
-        dissimpair pair = heap_poll(heap,&n_pairs);
-        if(!discarted[pair.indx_a] && !discarted[pair.indx_b]){
-            // Delete the second solution on the pair.
-            int to_delete = pair.indx_b;
-            discarted[to_delete] = 1;
-            free(sols[to_delete]);
-            elims += 1;
-            // Update double linked list:
-            if(nexts[to_delete]!=-1) prevs[nexts[to_delete]] = prevs[to_delete];
-            if(prevs[to_delete]!=-1) nexts[prevs[to_delete]] = nexts[to_delete];
-            // Add new pairs to replace those that will be deleted on the destroyed solution.
-            int *prev_sols = safe_malloc(sizeof(int)*vision_range);
-            int *next_sols = safe_malloc(sizeof(int)*vision_range);
-            int iter;
-            // Get solutions after
-            iter = to_delete;
-            for(int i=0;i<vision_range;i++){
-                if(nexts[iter]==-1){
-                    next_sols[i] = -1;
-                }else{
-                    iter = nexts[iter];
-                    next_sols[i] = iter;
-                }
+        // Delete the second (worst) solution on the pair.
+        int to_delete = pair.indx_b;
+        discarted[to_delete] = 1;
+        free(sols[to_delete]);
+        elims += 1;
+        // Update double linked list:
+        if(nexts[to_delete]!=-1) prevs[nexts[to_delete]] = prevs[to_delete];
+        if(prevs[to_delete]!=-1) nexts[prevs[to_delete]] = nexts[to_delete];
+        // Add new pairs to replace those that will be deleted on the destroyed solution.
+        int iter;
+        // Get solutions after
+        iter = to_delete;
+        for(int i=0;i<vision_range;i++){
+            if(nexts[iter]==-1){
+                next_sols[i] = -1;
+            }else{
+                iter = nexts[iter];
+                next_sols[i] = iter;
             }
-            // Get solutions before
-            iter = to_delete;
-            for(int i=0;i<vision_range;i++){
-                if(prevs[iter]==-1){
-                    prev_sols[i] = -1;
-                }else{
-                    iter = prevs[iter];
-                    prev_sols[i] = iter;
-                }
+        }
+        // Get solutions before
+        iter = to_delete;
+        for(int i=0;i<vision_range;i++){
+            if(prevs[iter]==-1){
+                prev_sols[i] = -1;
+            }else{
+                iter = prevs[iter];
+                prev_sols[i] = iter;
             }
-            // Create new pairs
-            for(int i=0;i<vision_range;i++){
-                int pair_a = prev_sols[vision_range-1-i];
-                int pair_b = next_sols[i];
-                if(pair_a!=-1 && pair_b!=-1){
-                    // Create the replace node:
-                    dissimpair pair;
-                    pair.indx_a = pair_a;
-                    pair.indx_b = pair_b;
-                    pair.dissim = solution_dissimilitude(prob,
-                        sols[pair.indx_a],sols[pair.indx_b]);
-                    assert(n_pairs<2*(*n_sols)*vision_range);
-                    heap_add(heap,&n_pairs,pair);
-                }
-            }
-            //
-            free(prev_sols);
-            free(next_sols);
+        }
+        // Wake threads to create new pairs
+        for(int i=0;i<THREADS;i++){
+            sem_post(&t_sems[i]);
+        }
+        // Wait for all threads to terminate their job
+        for(int i=0;i<THREADS;i++){
+            sem_wait(&c_sems[i]);
         }
     }
+    // Wake threads for termination
+    terminated = 1;
+    for(int i=0;i<THREADS;i++){
+        sem_post(&t_sems[i]);
+    }
+    // Join threads
+    for(int i=0;i<THREADS;i++){
+        pthread_join(threads[i],NULL);
+    }
+    // Destroy semaphores
+    for(int i=0;i<THREADS;i++){
+        sem_destroy(&t_sems[i]);
+        sem_destroy(&c_sems[i]);
+    }
+    // Free double linked list
+    free(threads);
+    free(t_sems);
+    free(c_sems);
+    free(targs);
+    free(prev_sols);
+    free(next_sols);
     // Free all the pairs:
     free(heap);
     n_pairs = 0;

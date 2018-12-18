@@ -4,6 +4,7 @@ Compile programs:
 ```bash
 make all
 ```
+
 Create `100` experiment templates for $n \in {100,200,300,400,500}$:
 ```bash
 bash generate_templates.sh "100 200 300 400 500" 100

@@ -76,7 +76,7 @@ solution **new_expand_solutions(const problem *prob,
         if(last_fsol==NULL || ftsol_cmp!=0){
             futuresol *next_pos = (futuresol *)
                 (futuresols+fsol_size*new_n_futuresols);
-            memcpy(next_pos,fsol,fsol_size);
+            memmove(next_pos,fsol,fsol_size);
             last_fsol = next_pos;
             new_n_futuresols += 1;
         }
@@ -84,7 +84,7 @@ solution **new_expand_solutions(const problem *prob,
         solution should be better that the better one that generates it */
         if(last_fsol!=NULL && ftsol_cmp==0){
             int is_better = fsol->origin->value>last_fsol->origin->value;
-            if(is_better) memcpy(last_fsol,fsol,fsol_size);
+            if(is_better) memmove(last_fsol,fsol,fsol_size);
         }
     }
     n_futuresols = new_n_futuresols;

@@ -1,3 +1,5 @@
+result
+callgrind.out.*
 tmp
 problems
 templates
@@ -10,6 +12,7 @@ paper
 *.png
 
 tests
+
 vgcore.*
 bin
 results

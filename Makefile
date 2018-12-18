@@ -1,50 +1,45 @@
 targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
+THREADS = 4
+
 all: dsa dsa_ls dsa_hausdorff randomhc
 
 bin:
 	mkdir -p bin
 tests:
-	mkdir -p tests
-results:
-	mkdir -p results
-
+	mkdir -p bin
 dsa: bin
-	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
-		-o ../bin/dsa -lm
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-o ../bin/dsa -lm -lpthreadd
 dsa_ls: bin
-	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -o ../bin/dsa_ls -lm
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -o ../bin/dsa_ls -lm -lpthread
 randomhc: bin
-		cd src; gcc -std=c99 -O -Wall $(targets) mainhc.c \
-		-o ../bin/randomhc -lm
+		cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) mainhc.c \
+		-o ../bin/randomhc -lm -lpthread
 dsa_hausdorff: bin
-	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
+	cd src; gcc -std=c99 -g -O -Wall $(targets) main.c \
 		-D HAUSDORFF -o ../bin/dsa_hausdorff -lm
-dsa_test: results test_problem
-	cd src; gcc -std=c99 -O -g -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D DEBUG -o ../bin/dsa -lm
-	valgrind --tool=memcheck --leak-check=yes ./bin/dsa 1000 100 10 \
-		tests/simple2_dsa results/simple2_dsa.txt
-
+dsa_test: dsa_ls results test_problem
+	# cd src; gcc -std=c99 -O -g -Wall $(targets) main.c \
+	# 	-D LOCAL_SEARCH -o ../bin/dsa -lm -lpthread
+	valgrind ./bin/dsa_ls 100 200 10 tests/prob_p5_dsa_pm tests/res_dsa.txt tests/res_dsa_ls.txt
+dsa_time:
+	time ./bin/dsa_ls 100 200 10 tests/prob_p5_dsa_pm tests/res_dsa.txt tests/res_dsa_ls.txt
 test_problem: tests
-	rm tests/* || true
-	# Create test problem:
-	python tools/problem_gen.py 20 100 1000 5000 tests/simple
-	# Create version with less facility cost:
-	sed -e 's/+5000 X/ +2500 X/g' tests/simple_lp > tests/simple2_lp
-	sed -e '1c\2500' tests/simple_dsa > tests/simple2_dsa
-	# Solve problems with lp_solve
-	lp_solve tests/simple_lp > tests/simple_lp_sol
-	lp_solve tests/simple2_lp > tests/simple2_lp_sol
+	rm -rf tests || true
+	mkdir -p tests
+	# Create test template (n=50)
+	python tools/template_gen.py 50 50 10000 tests/simple
+	# Create p-median problem (p=15):
+	sed -e "s/<<PP>>/15/g" tests/simple_dsa_pm > tests/prob_p5_dsa_pm
 	# Plot problem:
-	python tools/svg_gen.py tests/simple_pos tests/simple_pos.svg
-	convert tests/simple_pos.svg tests/simple_pos.png
-	# Plot solution to problem 1:
-	python tools/svg_gen.py tests/simple_pos \
-		-p tests/simple_lp_sol tests/simple_lp_sol.svg
-	convert tests/simple_lp_sol.svg tests/simple_lp_sol.png
-	# Plot solution to problem 2:
-	python tools/svg_gen.py tests/simple_pos \
-		-p tests/simple2_lp_sol tests/simple2_lp_sol.svg
-	convert tests/simple2_lp_sol.svg tests/simple2_lp_sol.png
+	python tools/svg_gen.py tests/simple_pos tests/prob.svg
+
+# fname = problems/prob_n0050_i0001_p08_dsa_splp
+# solname = result/prob_n0050_i0001_p08_dsa_splp
+# timetest:
+# 	rm -rf result 2>/dev/null
+# 	mkdir -p result
+# 	valgrind --tool=callgrind --callgrind-out-file=callgrind.out.timetest ./bin/dsa_ls 100 200 1 $(fname) $(solname) $(solname)hc
+# 	callgrind_annotate --tree=caller callgrind.out.timetest > profiles/no_parallel.txt
