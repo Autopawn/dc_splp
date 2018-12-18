@@ -7,7 +7,7 @@ all: dsa dsa_ls dsa_hausdorff randomhc
 bin:
 	mkdir -p bin
 tests:
-	mkdir -p bin
+	mkdir -p tests
 dsa: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 		-o ../bin/dsa -lm -lpthread
@@ -29,7 +29,6 @@ dsa_profile: dsa_ls tests/simple_pos
 		./bin/dsa_ls 100 200 10 tests/prob_p5_dsa_pm tests/res_dsa.txt tests/res_dsa_ls.txt
 	callgrind_annotate --tree=caller tests/callgrind.out.timetest > tests/parallel_$(THREADS).txt
 tests/simple_pos: tests
-	rm -rf tests || true
 	mkdir -p tests
 	# Create test template (n=50)
 	python tools/template_gen.py 50 50 10000 tests/simple
