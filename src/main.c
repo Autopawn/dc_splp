@@ -2,6 +2,18 @@
 
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
+
+float get_delta_seconds(struct timeval tv1, struct timeval tv2){
+    struct timeval tvdiff = {tv2.tv_sec-tv1.tv_sec,tv2.tv_usec-tv1.tv_usec};
+    if(tvdiff.tv_usec<0){
+        tvdiff.tv_usec += 1000000;
+        tvdiff.tv_sec -= 1;
+    }
+    float secs = (float)(tvdiff.tv_sec)+1e-6*tvdiff.tv_usec;
+    return secs;
+}
+
 
 int main(int argc, char **argv){
     int pool_size,vision_range,max_to_show;
@@ -43,16 +55,30 @@ int main(int argc, char **argv){
     }
     assert(vision_range>=-1);
     printf("Max solutions to show: %d\n",max_to_show);
+
     // Load problem file:
     problem *prob = new_problem_load(input_file);
     // Get the solutions:
     int n_sols, max_size_found;
     printf("Starting search...\n");
+
+    // ---@> Start counting time
     clock_t start = clock();
+    struct timeval elapsed_start;
+    gettimeofday(&elapsed_start,NULL);
+
+    //
     solution **sols = new_find_best_solutions(prob,
         pool_size, vision_range, &n_sols, &max_size_found);
+
+    // End counting time
     clock_t end = clock();
+    struct timeval elapsed_end;
+    gettimeofday(&elapsed_end,NULL);
+    // ---@>
+
     float seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    float elapsed_seconds = get_delta_seconds(elapsed_start,elapsed_end);
     printf("Max size solution found: %d\n",max_size_found);
     printf("Search done in %f [s]!\n",seconds);
     // Print best solutions
@@ -64,7 +90,7 @@ int main(int argc, char **argv){
     }
     printf("Saving solutions...\n");
     save_solutions(argv[5],sols,sols_show,n_sols,input_file,pool_size,vision_range,
-        seconds,max_size_found);
+        seconds,max_size_found,elapsed_seconds);
     // Perform local search
     #ifdef LOCAL_SEARCH
         printf("Starting local searchs...\n");
@@ -76,13 +102,16 @@ int main(int argc, char **argv){
         for(int i=0;i<sols_show;i++){
             print_solution(stdout,sols[i]);
         }
-        // Update timer
+        // ---@> Update timers
         end = clock();
+        gettimeofday(&elapsed_end,NULL);
         seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
+        elapsed_seconds = get_delta_seconds(elapsed_start,elapsed_end);
+        //
         printf("All done in %f [s]!\n",seconds);
         printf("Saving solutions...\n");
         save_solutions(argv[6],sols,sols_show,n_sols,input_file,pool_size,vision_range,
-            seconds,max_size_found);
+            seconds,max_size_found,elapsed_seconds);
     #endif
     // Free memory
     for(int i=0;i<n_sols;i++){

@@ -130,7 +130,7 @@ problem *new_problem_load(const char *file){
 
 void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sols,
         const char *input_file, int pool_size, int vision_range,
-        float seconds, int n_iterations){
+        float seconds, int n_iterations, float elapsed){
     FILE *fp;
     printf("Opening file \"%s\"...\n",file);
     fp = fopen(file,"w");
@@ -140,6 +140,7 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     }
     // Print some aditional info:
     fprintf(fp,"# Time: %f\n",seconds);
+    fprintf(fp,"# Elapsed: %f\n",elapsed);
     fprintf(fp,"# Input_file: %s\n",input_file);
     fprintf(fp,"# Pool_size: %d\n",pool_size);
     fprintf(fp,"# Iterations: %d\n",n_iterations);

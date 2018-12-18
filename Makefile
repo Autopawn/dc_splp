@@ -29,13 +29,18 @@ dsa_profile: dsa_ls tests/simple_pos
 		./bin/dsa_ls 100 200 10 tests/prob_p5_dsa_pm tests/res_dsa.txt tests/res_dsa_ls.txt
 	callgrind_annotate --tree=caller tests/callgrind.out.timetest > tests/parallel_$(THREADS).txt
 tests/simple_pos: tests
-	mkdir -p tests
 	# Create test template (n=50)
 	python tools/template_gen.py 50 50 10000 tests/simple
 	# Create p-median problem (p=15):
 	sed -e "s/<<PP>>/15/g" tests/simple_dsa_pm > tests/prob_p5_dsa_pm
 	# Plot problem:
 	python tools/svg_gen.py tests/simple_pos tests/prob.svg
+dsa_ls_many: bin tests
+	for i in 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16; do \
+		cd src; gcc -std=c99 -g -D THREADS=$$i -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -o ../bin/dsa_ls_$$i -lm -lpthread; \
+		cd ..; ./bin/dsa_ls_$$i 150 300 10 tests/prob_p5_dsa_pm tests/res_dsa_$$i.txt tests/res_dsa_ls_$$i.txt; \
+	done
 
 # fname = problems/prob_n0050_i0001_p08_dsa_splp
 # solname = result/prob_n0050_i0001_p08_dsa_splp
