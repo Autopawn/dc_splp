@@ -1,3 +1,4 @@
+data/*
 result
 callgrind.out.*
 tmp
