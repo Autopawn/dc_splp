@@ -1,7 +1,20 @@
 #include "dsa.h"
 
+// NOTE: This FILE is legacy.
+
 #include <math.h>
 #include <time.h>
+#include <sys/time.h>
+
+float get_delta_seconds(struct timeval tv1, struct timeval tv2){
+    struct timeval tvdiff = {tv2.tv_sec-tv1.tv_sec,tv2.tv_usec-tv1.tv_usec};
+    if(tvdiff.tv_usec<0){
+        tvdiff.tv_usec += 1000000;
+        tvdiff.tv_sec -= 1;
+    }
+    float secs = (float)(tvdiff.tv_sec)+1e-6*tvdiff.tv_usec;
+    return secs;
+}
 
 int main(int argc, char **argv){
     int n_sols_mult,max_size,max_to_show;
@@ -26,7 +39,12 @@ int main(int argc, char **argv){
     problem *prob = new_problem_load(input_file);
     // Get the solutions:
     printf("Starting search...\n");
+
+    // ---@> Start counting time
     clock_t start = clock();
+    struct timeval elapsed_start;
+    gettimeofday(&elapsed_start,NULL);
+
     // Generate initial random solutions:
     int n_sols = 0;
     solution **sols = safe_malloc(sizeof(solution*)*n_sols_mult*max_size*prob->n_facilities);
@@ -53,6 +71,15 @@ int main(int argc, char **argv){
     // Perform local search:
     printf("Starting local searchs...\n");
     local_search_solutions(prob,sols,&n_sols);
+
+    // End counting time
+    clock_t end = clock();
+    struct timeval elapsed_end;
+    gettimeofday(&elapsed_end,NULL);
+    float seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    float elapsed_seconds = get_delta_seconds(elapsed_start,elapsed_end);
+    // ---@>
+
     // Print best solutions
     printf("Best solutions after HC:\n");
     int sols_show = n_sols;
@@ -61,12 +88,12 @@ int main(int argc, char **argv){
         print_solution(stdout,sols[i]);
     }
     // Update timer
-    clock_t end = clock();
-    float seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    end = clock();
+    seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
     printf("All done in %f [s]!\n",seconds);
     printf("Saving solutions...\n");
     save_solutions(argv[5],sols,sols_show,n_sols,input_file,n_sols_mult,-1,
-        seconds,max_size);
+        seconds,max_size,elapsed_seconds);
     // Free memory
     for(int i=0;i<n_sols;i++){
         free(sols[i]);

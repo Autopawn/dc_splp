@@ -14,7 +14,6 @@ float get_delta_seconds(struct timeval tv1, struct timeval tv2){
     return secs;
 }
 
-
 int main(int argc, char **argv){
     int pool_size,vision_range,max_to_show;
     const char *input_file = NULL;
@@ -75,10 +74,10 @@ int main(int argc, char **argv){
     clock_t end = clock();
     struct timeval elapsed_end;
     gettimeofday(&elapsed_end,NULL);
-    // ---@>
-
     float seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
     float elapsed_seconds = get_delta_seconds(elapsed_start,elapsed_end);
+    // ---@>
+
     printf("Max size solution found: %d\n",max_size_found);
     printf("Search done in %f [s]!\n",seconds);
     // Print best solutions

@@ -1,6 +1,115 @@
 #include "load.h"
 
+problem *load_simple_format(const char *file){
+    FILE *fp;
+    printf("Reading file \"%s\"...\n",file);
+    fp = fopen(file,"r");
+    if(fp==NULL){
+        fprintf(stderr,"ERROR: couldn't open file \"%s\"!\n",file);
+        exit(1);
+    }
+    // Alloc memory for problem.
+    problem *prob = malloc(sizeof(problem));
+
+    // Read filename in header:
+    char buffer[400];
+    if(fscanf(fp,"FILE: %s",buffer)!=1){
+        fprintf(stderr,"ERROR: couldn't read FILE!\n");
+        exit(1);
+    }
+    printf("FILE: \"%s\"",buffer);
+
+    // Read the number of facilities:
+    if(fscanf(fp,"%d",&prob->n_facilities)!=1){
+        fprintf(stderr,"ERROR: number of facilities expected!\n");
+        exit(1);
+    }
+    printf("N Facilities: %d\n",prob->n_facilities);
+    assert(prob->n_facilities<=MAX_FACILITIES);
+
+    // Read the number of clients:
+    if(fscanf(fp,"%d",&prob->n_clients)!=1){
+        fprintf(stderr,"ERROR: number of clients expected!\n");
+        exit(1);
+    }
+    printf("N Clients: %d\n",prob->n_clients);
+    assert(prob->n_clients<=MAX_CLIENTS);
+
+    // Third argument must be 0
+    int trd_num = -1;
+    int trd_num_read = fscanf(fp,"%d",&trd_num);
+    assert(trd_num_read==1 && trd_num==0);
+
+    // For each facility
+    for(int i=0;i<prob->n_facilities;i++){
+
+        // Read facility index
+        int facility_index;
+        if(fscanf(fp,"%d",&facility_index)!=1){
+            fprintf(stderr,"ERROR: facility index expected!\n");
+        }
+        assert(i+1==facility_index);
+
+        // Read facility cost
+        if(fscanf(fp,"%lld",&prob->facility_cost[i])!=1){
+            fprintf(stderr,"ERROR: facility %d cost expected!\n",i);
+            exit(1);
+        }
+
+        // Read each distance
+        for(int j=0;j<prob->n_clients;j++){
+            if(fscanf(fp,"%lld",&prob->distances[i][j])!=1){
+                fprintf(stderr,"ERROR: distance from facility %d to client %d expected!\n",i,j);
+                exit(1);
+            }
+        }
+    }
+
+    // Unset values:
+    prob->size_restriction = -1; // SPLP
+    prob->transport_cost = 1;
+    for(int j=0;j<prob->n_clients;j++){
+        prob->weights[j] = 1;
+    }
+
+    // Compute facility distance matrix:
+    printf("Computing facility-facility distance matrix...\n");
+    for(int a=0;a<prob->n_facilities;a++){
+        for(int b=a+1;b<prob->n_facilities;b++){
+            lint min_dist = MAX_LINT;
+            for(int j=0;j<prob->n_clients;j++){
+                lint dist_sum = prob->distances[a][j]+prob->distances[b][j];
+                if(dist_sum<min_dist) min_dist = dist_sum;
+            }
+            prob->fdistances[a][b] = min_dist;
+            prob->fdistances[b][a] = min_dist;
+        }
+    }
+
+    //
+    fclose(fp);
+    printf("Done reading.\n");
+    return prob;
+}
+
+problem *load_orlib_format(const char *file){
+    assert(0);
+    return NULL;
+}
+
 problem *new_problem_load(const char *file){
+    // Check if file ends with .txt
+    int len = strlen(file);
+    int simple_format = (len>3 && strcmp(file+(len-4),".txt")==0);
+    if(simple_format){
+        return load_simple_format(file);
+    }else{
+        return load_orlib_format(file);
+    }
+}
+
+// OLD IMPLEMENTATION:
+problem *legacy_new_problem_load(const char *file){
     FILE *fp;
     printf("Reading file \"%s\"...\n",file);
     fp = fopen(file,"r");
@@ -17,17 +126,21 @@ problem *new_problem_load(const char *file){
         fprintf(stderr,"ERROR: facility cost expected!\n");
         exit(1);
     }
+    lint facility_fixed_cost;
     if(fcost<0){
-        prob->facility_fixed_cost = 0;
+        facility_fixed_cost = 0;
         prob->size_restriction = -fcost;
         printf("--- p-median PROBLEM ---\n");
         printf("Facilities: %d\n",prob->size_restriction);
         assert(prob->size_restriction<=MAX_SOL_SIZE);
     }else{
-        prob->facility_fixed_cost = fcost;
+        facility_fixed_cost = fcost;
         prob->size_restriction = -1;
         printf("--- SPLP PROBLEM ---\n");
-        printf("Facility cost: %lld\n",prob->facility_fixed_cost);
+        printf("Facility cost: %lld\n",facility_fixed_cost);
+    }
+    for(int i=0;i<prob->n_facilities;i++){
+        prob->facility_cost[i] = facility_fixed_cost;
     }
 
     // Read the transport cost:

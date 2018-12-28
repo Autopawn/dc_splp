@@ -67,7 +67,9 @@ void solution_add(const problem *prob, solution *sol, short newf){
         }
     }
     // The facility costs:
-    nvalue -= prob->facility_fixed_cost*sol->n_facilities;
+    for(int i=0;i<sol->n_facilities;i++){
+        nvalue -= prob->facility_cost[sol->facilities[i]];
+    }
     // Update solution value:
     sol->value = nvalue;
 }
@@ -117,7 +119,9 @@ void solution_remove(const problem *prob, solution *sol, short remf){
         }
     }
     // The facility costs:
-    nvalue -= prob->facility_fixed_cost*sol->n_facilities;
+    for(int i=0;i<sol->n_facilities;i++){
+        nvalue -= prob->facility_cost[sol->facilities[i]];
+    }
     // Update solution value:
     sol->value = nvalue;
 }

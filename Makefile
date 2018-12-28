@@ -2,7 +2,7 @@ targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
 THREADS = 4
 
-all: dsa dsa_ls dsa_hausdorff randomhc
+all: dsa dsa_ls dsa_hausdorff dsa_ls_many randomhc
 
 bin:
 	mkdir -p bin

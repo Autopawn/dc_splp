@@ -14,7 +14,7 @@
 
 
 #define MAX_FACILITIES 500
-#define MAX_CLIENTS 500
+#define MAX_CLIENTS 600
 #define MAX_SOL_SIZE 20
 
 typedef long long int lint;
@@ -33,7 +33,7 @@ typedef struct{
     // ^ Distance matrix between facilities and clients.
     lint fdistances[MAX_FACILITIES][MAX_FACILITIES];
     // ^ Distance matrix between facilities and facilities, used for solution comparison.
-    lint facility_fixed_cost;
+    lint facility_cost[MAX_FACILITIES];
     // ^ Cost of each facility.
     lint transport_cost;
     // ^ Cost of connecting one weight of unit one unit of distance.
