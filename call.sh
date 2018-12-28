@@ -11,8 +11,8 @@ for params in $parameters; do
     for p in $fnames; do
         if [[ -d $p ]]; then
             if [ -n "$problems" ]; then
-                name=$params_"$(basename $group)"
-                qsub -N $name solve.sh \
+                name="$params"_"$(basename $group)"
+                echo qsub -N $name solve.sh \
                     -F "$params \"$group\" \"$problems\"" || \
                 bash solve.sh $params "$group" "$problems"
             fi
