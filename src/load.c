@@ -126,7 +126,7 @@ problem *load_orlib_format(FILE *fp){
             fprintf(stderr,"ERROR: facility %d cost expected!\n",i);
             exit(1);
         }
-        prob->facility_cost[i] = (lint)(ORLIB_FORMAT_COST_MULT*facility_cost+0.4999999999);
+        prob->facility_cost[i] = (lint)(ORLIB_FORMAT_COST_MULT*facility_cost+0.499999999);
     }
 
     // For each client
@@ -149,9 +149,9 @@ problem *load_orlib_format(FILE *fp){
             }
             if(demand==0){
                 assert(all_demands_0 || dist==0);
-                prob->distances[i][j] = (lint) (ORLIB_FORMAT_COST_MULT*dist+0.4999999999);
+                prob->distances[i][j] = (lint) (ORLIB_FORMAT_COST_MULT*dist+0.499999999);
             }else{
-                prob->distances[i][j] = (lint) (ORLIB_FORMAT_COST_MULT*dist/demand+0.4999999999);
+                prob->distances[i][j] = (lint) (ORLIB_FORMAT_COST_MULT*dist/demand+0.499999999);
             }
         }
     }
@@ -245,6 +245,13 @@ void print_solution(FILE *f, const solution *sol, double multiplier){
     fprintf(f,"SOLUTION:\n");
     double value = sol->value/multiplier;
     fprintf(f,"  Value: %lf\n",value);
+    fprintf(f,"  Assigns: ");
+    for(int i=0;i<MAX_CLIENTS;i++){
+        if(sol->assignments[i]!=-1){
+            fprintf(f,"%d ",sol->assignments[i]);
+        }
+    }
+    fprintf(f,"\n");
     fprintf(f,"  Facilities: %d\n",sol->n_facilities);
     for(int i=0;i<sol->n_facilities;i++){
         fprintf(f,"  %4d :",sol->facilities[i]);

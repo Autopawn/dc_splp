@@ -1,6 +1,6 @@
 targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
-THREADS = 4
+THREADS = 0
 
 all: dsa dsa_ls dsa_hausdorff randomhc
 
