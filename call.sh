@@ -13,7 +13,7 @@ for params in $parameters; do
             if [ -n "$problems" ]; then
                 gname="$(echo $group | tr / _ | cut -d'_' -f2-)"
                 name="$params"_"$gname"
-                echo qsub -N $name solve.sh \
+                qsub -N $name solve.sh \
                     -F "$params \"$group\" \"$problems\"" || \
                 bash solve.sh $params "$group" "$problems"
             fi
