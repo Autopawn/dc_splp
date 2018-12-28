@@ -12,7 +12,7 @@ for params in $parameters; do
         if [[ -d $p ]]; then
             if [ -n "$problems" ]; then
                 name="$params"_"$(basename $group)"
-                echo qsub -N $name solve.sh \
+                qsub -N $name solve.sh \
                     -F "$params \"$group\" \"$problems\"" || \
                 bash solve.sh $params "$group" "$problems"
             fi
