@@ -85,14 +85,16 @@ int main(int argc, char **argv){
     int sols_show = n_sols;
     if(sols_show>max_to_show) sols_show = max_to_show;
     for(int i=0;i<sols_show;i++){
-        print_solution(stdout,sols[i]);
+        print_solution(stdout,sols[i],1.0);
     }
     // Update timer
     end = clock();
     seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
     printf("All done in %f [s]!\n",seconds);
     printf("Saving solutions...\n");
-    save_solutions(argv[5],sols,sols_show,n_sols,input_file,n_sols_mult,-1,
+    save_solutions(argv[5],sols,sols_show,n_sols,
+        1.0,
+        input_file,n_sols_mult,-1,
         seconds,max_size,elapsed_seconds);
     // Free memory
     for(int i=0;i<n_sols;i++){

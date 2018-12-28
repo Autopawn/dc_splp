@@ -85,10 +85,12 @@ int main(int argc, char **argv){
     int sols_show = n_sols;
     if(sols_show>max_to_show) sols_show = max_to_show;
     for(int i=0;i<sols_show;i++){
-        print_solution(stdout,sols[i]);
+        print_solution(stdout,sols[i],prob->multiplier);
     }
     printf("Saving solutions...\n");
-    save_solutions(argv[5],sols,sols_show,n_sols,input_file,pool_size,vision_range,
+    save_solutions(argv[5],sols,sols_show,n_sols,
+        prob->multiplier,
+        input_file,pool_size,vision_range,
         seconds,max_size_found,elapsed_seconds);
     // Perform local search
     #ifdef LOCAL_SEARCH
@@ -99,7 +101,7 @@ int main(int argc, char **argv){
         sols_show = n_sols;
         if(sols_show>max_to_show) sols_show = max_to_show;
         for(int i=0;i<sols_show;i++){
-            print_solution(stdout,sols[i]);
+            print_solution(stdout,sols[i],prob->multiplier);
         }
         // ---@> Update timers
         end = clock();
@@ -109,7 +111,9 @@ int main(int argc, char **argv){
         //
         printf("All done in %f [s]!\n",seconds);
         printf("Saving solutions...\n");
-        save_solutions(argv[6],sols,sols_show,n_sols,input_file,pool_size,vision_range,
+        save_solutions(argv[6],sols,sols_show,n_sols,
+            prob->multiplier,
+            input_file,pool_size,vision_range,
             seconds,max_size_found,elapsed_seconds);
     #endif
     // Free memory

@@ -39,6 +39,8 @@ typedef struct{
     // ^ Cost of connecting one weight of unit one unit of distance.
     int size_restriction;
     // ^ When it is not -1, the returned solutions must be of that size, also there is no solution filtering in the expansion process.
+    lint multiplier;
+    // ^ Multiplier of the costs when working with floats.
 } problem;
 
 // Auxiliar functions:

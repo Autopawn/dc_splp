@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#define ORLIB_FORMAT_COST_MULT 100000
+
 typedef struct {
     int n_facilities;
     // ^ Number of facilities in this solution.
