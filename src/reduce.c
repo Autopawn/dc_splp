@@ -89,8 +89,8 @@ void *reduce_thread_execution(void *arg){
         }
         // Save pairs in the heap
         pthread_mutex_lock(args->heap_mutex);
-            for(int i=0;i<n_pairs;i++){
-                heap_add(args->heap,args->heap_n_pairs,pairs[i]);
+            for(int k=0;k<n_pairs;k++){
+                heap_add(args->heap,args->heap_n_pairs,pairs[k]);
             }
         pthread_mutex_unlock(args->heap_mutex);
         // Delete pairs
@@ -99,6 +99,8 @@ void *reduce_thread_execution(void *arg){
     free(pairs);
 
     // Wake when is required to compute new dissimilitudes
+    dissimpair *pair_buffer = malloc(sizeof(dissimpair)*(args->vision_range/THREADS+1));
+    int pair_buffer_len = 0;
     while(1){
         sem_post(args->complete_sem);
         // ---@> Main thread works here.
@@ -119,13 +121,30 @@ void *reduce_thread_execution(void *arg){
                 pair.indx_b = pair_b;
                 pair.dissim = solution_dissimilitude(args->prob,
                     args->sols[pair_a],args->sols[pair_b]);
-                // Add the new pair to the heap:
-                pthread_mutex_lock(args->heap_mutex);
-                    heap_add(args->heap,args->heap_n_pairs,pair);
-                pthread_mutex_unlock(args->heap_mutex);
+                // Add to pair buffer:
+                pair_buffer[pair_buffer_len] = pair;
+                pair_buffer_len += 1;
+                // Add pairs in buffer to to the heap if mutex is free
+                if(pthread_mutex_trylock(args->heap_mutex)==0){
+                    for(int i=0;i<pair_buffer_len;i++){
+                        heap_add(args->heap,args->heap_n_pairs,pair_buffer[i]);
+                    }
+                    pthread_mutex_unlock(args->heap_mutex);
+                    pair_buffer_len = 0;
+                }
             }
         }
+        // If pairs remaining, wait for mutex
+        if(pair_buffer_len>0){
+            pthread_mutex_lock(args->heap_mutex);
+            for(int i=0;i<pair_buffer_len;i++){
+                heap_add(args->heap,args->heap_n_pairs,pair_buffer[i]);
+            }
+            pthread_mutex_unlock(args->heap_mutex);
+            pair_buffer_len = 0;
+        }
     }
+    free(pair_buffer);
     return NULL;
 }
 

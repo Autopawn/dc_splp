@@ -25,7 +25,7 @@ problem *load_simple_format(FILE *fp){
         fprintf(stderr,"ERROR: couldn't read FILE!\n");
         exit(1);
     }
-    printf("FILE: \"%s\"",buffer);
+    printf("FILE: \"%s\"\n",buffer);
 
     // Read the number of facilities:
     if(fscanf(fp,"%d",&prob->n_facilities)!=1){
