@@ -20,7 +20,7 @@ Paralelización de Disperse Construction
 
 
 ---
-# Algorimo
+# Algoritmo
 
 ![](code1.png)
 

@@ -35,16 +35,11 @@ tests/simple_pos: tests
 	sed -e "s/<<PP>>/15/g" tests/simple_dsa_pm > tests/prob_p5_dsa_pm
 	# Plot problem:
 	python tools/svg_gen.py tests/simple_pos tests/prob.svg
-dsa_ls_many: bin tests
+many_bin: bin tests
 	for i in 0 1 2 3 4 5 6 7 8 9 10; do \
 		cd src; gcc -std=c99 -g -D THREADS=$$i -Wall $(targets) main.c \
 		-D LOCAL_SEARCH -o ../bin/dsa_ls_$$i -lm -lpthread; \
-		cd ..; ./bin/dsa_ls_$$i 100 200 10 splp/Euclid/1011EuclS.txt tests/res_dc_euclid_$$i.txt tests/res_dc_euclid_ls_$$i.txt; \
-	done
-	for i in 0 1 2 3 4 5 6 7 8 9 10; do \
-		cd src; gcc -std=c99 -g -D THREADS=$$i -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -o ../bin/dsa_ls_$$i -lm -lpthread; \
-		cd ..; ./bin/dsa_ls_$$i 100 200 10 splp/GapA/1032GapAS.txt tests/res_dc_gapa_$$i.txt tests/res_dc_gapa_ls_$$i.txt; \
+		cd ..; \
 	done
 
 # fname = problems/prob_n0050_i0001_p08_dsa_splp
