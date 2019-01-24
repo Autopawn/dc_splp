@@ -13,9 +13,9 @@
 #endif
 
 
-#define MAX_FACILITIES 1000
-#define MAX_CLIENTS 1000
-#define MAX_SOL_SIZE 20
+#define MAX_FACILITIES 3000
+#define MAX_CLIENTS 3000
+#define MAX_SOL_SIZE 600
 
 typedef long long int lint;
 typedef unsigned int uint;
@@ -41,6 +41,8 @@ typedef struct{
     // ^ When it is not -1, the returned solutions must be of that size, also there is no solution filtering in the expansion process.
     lint multiplier;
     // ^ Multiplier of the costs when working with floats.
+    int fnearest[MAX_FACILITIES][MAX_FACILITIES];
+    // ^ Index of the facilities, from nearest to farthest to each one
 } problem;
 
 // Auxiliar functions:
@@ -48,5 +50,8 @@ void *safe_malloc(size_t size);
 uint hash_int(uint x);
 void add_to_sorted(short *array, int *len, short val);
 void rem_of_sorted(short *array, int *len, short val);
+
+void problem_create_facility_dist_matrix(problem *prob);
+void problem_create_facility_nearest_matrix(problem *prob);
 
 #endif

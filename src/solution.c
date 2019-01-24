@@ -126,24 +126,42 @@ void solution_remove(const problem *prob, solution *sol, short remf){
     sol->value = nvalue;
 }
 
-// Returns the dissimilitude (using mean geometric error or Hausdorff).
-lint solution_dissimilitude(const problem *prob,
-        const solution *sol_a, const solution *sol_b){
+#ifdef HAUSDORFF
+
+// Returns the dissimilitude (using Hausdorff):
+lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
     lint disim = 0;
     for(int t=0;t<2;t++){
-        #ifdef HAUSDORFF
-            for(int ai=0;ai<sol_a->n_facilities;ai++){
-                short f_a = sol_a->facilities[ai];
-                lint cmin = MAX_LINT;
-                for(int bi=0;bi<sol_b->n_facilities;bi++){
-                    short f_b = sol_b->facilities[bi];
-                    lint dist = prob->fdistances[f_a][f_b];
-                    if(dist<cmin) cmin = dist;
-                    if(cmin<disim) break;
-                }
-                if(disim<cmin && cmin<MAX_LINT) disim = cmin;
+        for(int ai=0;ai<sol_a->n_facilities;ai++){
+            short f_a = sol_a->facilities[ai];
+            lint cmin = MAX_LINT;
+            for(int bi=0;bi<sol_b->n_facilities;bi++){
+                short f_b = sol_b->facilities[bi];
+                lint dist = prob->fdistances[f_a][f_b];
+                if(dist<cmin) cmin = dist;
+                if(cmin<disim) break;
             }
-        #else
+            if(disim<cmin && cmin<MAX_LINT) disim = cmin;
+        }
+        // Swap solutions for 2nd iteration:
+        const solution *aux = sol_a;
+        sol_a = sol_b;
+        sol_b = aux;
+    }
+    return disim;
+}
+
+#else
+
+// Returns the dissimilitude (using mean geometric error).
+lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
+    lint disim = 0;
+    for(int t=0;t<2;t++){
+        // Check the mode that will be used
+        // modeA compares each facility with the others
+        // modeB checks for each facility from the nearest ot the farthest
+        if(sol_b->n_facilities*sol_b->n_facilities<prob->n_facilities){
+            // MODE A
             // Add distance from each facility in A to B.
             for(int ai=0;ai<sol_a->n_facilities;ai++){
                 lint min_dist = -1;
@@ -155,7 +173,30 @@ lint solution_dissimilitude(const problem *prob,
                 }
                 disim += min_dist;
             }
-        #endif
+        }else{
+            // Precompute array of presences of the solution b
+            char *presence = safe_malloc(sizeof(char)*prob->n_facilities);
+            memset(presence,0,sizeof(char)*prob->n_facilities);
+            for(int bi=0;bi<sol_b->n_facilities;bi++){
+                short f_b = sol_b->facilities[bi];
+                presence[f_b] = 1;
+            }
+            // Add distance from each facility in A to B.
+            for(int ai=0;ai<sol_a->n_facilities;ai++){
+                short f_a = sol_a->facilities[ai];
+                // Find the nearest presence
+                short f_b = -1;
+                for(int k=0;k<prob->n_facilities;k++){
+                    f_b = prob->fnearest[f_a][k];
+                    if(presence[f_b]) break;
+                }
+                assert(f_b!=-1);
+                // Add that distance
+                disim += prob->fdistances[f_a][f_b];
+            }
+            //
+            free(presence);
+        }
         // Swap solutions for 2nd iteration:
         const solution *aux = sol_a;
         sol_a = sol_b;
@@ -163,6 +204,8 @@ lint solution_dissimilitude(const problem *prob,
     }
     return disim;
 }
+
+#endif
 
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){

@@ -1,20 +1,5 @@
 #include "load.h"
 
-void problem_create_facility_dist_matrix(problem *prob){
-    // sets the distance between facilities: d(a,b) = min_j d(a,j)+d(b,j)
-    for(int a=0;a<prob->n_facilities;a++){
-        for(int b=a;b<prob->n_facilities;b++){
-            lint min_dist = MAX_LINT;
-            for(int j=0;j<prob->n_clients;j++){
-                lint dist_sum = prob->distances[a][j]+prob->distances[b][j];
-                if(dist_sum<min_dist) min_dist = dist_sum;
-            }
-            prob->fdistances[a][b] = min_dist;
-            prob->fdistances[b][a] = min_dist;
-        }
-    }
-}
-
 problem *load_simple_format(FILE *fp){
     // Alloc memory for problem.
     problem *prob = malloc(sizeof(problem));
@@ -84,6 +69,7 @@ problem *load_simple_format(FILE *fp){
     // Compute facility distance matrix:
     printf("Computing facility-facility distance matrix...\n");
     problem_create_facility_dist_matrix(prob);
+    problem_create_facility_nearest_matrix(prob);
 
     //
     return prob;
@@ -169,6 +155,7 @@ problem *load_orlib_format(FILE *fp){
     // Compute facility distance matrix:
     printf("Computing facility-facility distance matrix...\n");
     problem_create_facility_dist_matrix(prob);
+    problem_create_facility_nearest_matrix(prob);
 
     //
     return prob;
