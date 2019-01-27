@@ -46,7 +46,7 @@ void solution_add(const problem *prob, solution *sol, short newf){
     add_to_sorted(sol->facilities,&sol->n_facilities,newf);
     // | New value after adding the new facility.
     lint nvalue = 0;
-    // Reassign clients to the new facility, from nearest to further.
+    // Reassign clients to the new facility
     for(int c=0;c<prob->n_clients;c++){
         // Distance of that client to the new facility:
         lint distance = prob->distances[newf][c];
@@ -207,6 +207,18 @@ lint solution_dissimilitude(const problem *prob, const solution *sol_a, const so
 
 #endif
 
+void solution_copy(const problem *prob, solution *dest, const solution *source){
+    // Copies a solution to a destiny
+    dest->n_facilities = source->n_facilities;
+    for(int i=0;i<dest->n_facilities;i++){
+        dest->facilities[i] = source->facilities[i];
+    }
+    for(int j=0;j<prob->n_clients;j++){
+        dest->assignments[j] = source->assignments[j];
+    }
+    dest->value = source->value;
+}
+
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){
     if(sol.n_facilities==0) return sol;
@@ -216,18 +228,18 @@ solution solution_hill_climbing(const problem *prob, solution sol){
     while(improvement){
         improvement = 0;
         // Remove a facility:
-        solution cand0 = best;
+        solution cand0; solution_copy(prob,&cand0,&best);
         for(int k=0;k<sol.n_facilities;k++){
             assert(cand0.n_facilities==sol.n_facilities);
-            solution cand1 = cand0;
+            solution cand1; solution_copy(prob,&cand1,&cand0);
             solution_remove(prob,&cand1,cand0.facilities[k]);
             // Add facility j:
             for(int j=0;j<prob->n_facilities;j++){
-                solution cand2 = cand1;
+                solution cand2; solution_copy(prob,&cand2,&cand1);
                 solution_add(prob,&cand2,j);
                 if(cand2.n_facilities==cand0.n_facilities &&
                         cand2.value>best.value){
-                    best = cand2;
+                    solution_copy(prob,&best,&cand2);
                     improvement = 1;
                 }
             }

@@ -1,6 +1,6 @@
 targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
-THREADS = 0
+THREADS = 16
 
 all: dsa dsa_ls dsa_hausdorff randomhc many_bin
 
@@ -19,7 +19,7 @@ randomhc: bin
 		-o ../bin/randomhc -lm -lpthread
 dsa_hausdorff: bin
 	cd src; gcc -std=c99 -g -O -Wall $(targets) main.c \
-		-D HAUSDORFF -o ../bin/dsa_hausdorff -lm
+		-D HAUSDORFF -D LOCAL_SEARCH -o ../bin/dsa_hausdorff_ls -lm
 many_bin: bin tests
 	for i in 0 1 2 3 4 5 6 7 8 9 10; do \
 		cd src; gcc -std=c99 -g -D THREADS=$$i -Wall $(targets) main.c \
@@ -34,3 +34,5 @@ many_bin: bin tests
 # 	mkdir -p result
 # 	valgrind --tool=callgrind --callgrind-out-file=callgrind.out.timetest ./bin/dsa_ls 100 200 1 $(fname) $(solname) $(solname)hc
 # 	callgrind_annotate --tree=caller callgrind.out.timetest > profiles/no_parallel.txt
+
+# Good testing one: "splp/Euclid/1311EuclS.txt"

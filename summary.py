@@ -1,4 +1,5 @@
 import os
+import sys
 
 def get_dirs(dir,ext=None):
     dirs = []
@@ -54,7 +55,7 @@ def is_optimum(sol,opt):
     return False
 
 prob_dir = "splp"
-sols_dir = "res/splp"
+sols_dir = sys.argv[1] if len(sys.argv)>=2 else "res/n_200_400/splp"
 
 problems = {}
 problems['opt'] = get_dirs(prob_dir,".opt")
@@ -92,7 +93,8 @@ for kind in ('opt','bub'):
                 show = 1
             else:
                 show = 0
-        print("%-40s %5s %5d %5d"%(joined,show,n_clients,n_opt_facilities))
+        perce = 0 if sol_data[1] is None else sol_data[1]/opt_data[1]
+        print("%-40s %5s %5d %5d %12.3f %12.3f %8.4f"%(joined,show,n_clients,n_opt_facilities,sol_data[1] or 0,opt_data[1],perce))
 
 print("max_opt_facilities %d"%max_facilities)
 print("max_clients %d"%max_clients)

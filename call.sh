@@ -1,10 +1,10 @@
-fnames=$(find splp/ | grep -v '.opt' | grep -v '.bub' | grep -v 'README' | grep -v '.c' | grep -v '.lst')
+fnames=$(find splp/ | grep -v '.opt' | grep -v '.bub' | grep -v 'README' | grep -v '.c' | grep -v '.lst' | grep -v '~')
 
-parameters="50_0 100_200 200_400"
+parameters="n_100_200 n_300_600 n_300_-1 h_300_600"
 
 make
 
-rm -rd res || true
+rm -rf res || true
 
 for params in $parameters; do
     problems=""
