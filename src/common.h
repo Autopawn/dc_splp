@@ -13,8 +13,8 @@
 #endif
 
 
-#define MAX_FACILITIES 3000
-#define MAX_CLIENTS 3000
+#define MAX_FACILITIES 2000
+#define MAX_CLIENTS 2000
 #define MAX_SOL_SIZE 100
 
 typedef long long int lint;

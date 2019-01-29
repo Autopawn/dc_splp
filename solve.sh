@@ -1,7 +1,7 @@
 #!/bin/bash
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
-#PBS -l mem=30gb
+#PBS -l mem=10gb
 
 if [ -n "${PBS_O_WORKDIR+1}" ]; then
     cd "$PBS_O_WORKDIR"
