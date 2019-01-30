@@ -26,6 +26,7 @@ lint solution_dissimilitude(const problem *prob,
         const solution *sol_a, const solution *sol_b);
 
 solution solution_hill_climbing(const problem *prob, solution sol);
+solution solution_whitaker_hill_climbing(const problem *prob, solution sol);
 
 int solution_value_cmp_inv(const void *a, const void *b);
 

@@ -222,6 +222,8 @@ void solution_copy(const problem *prob, solution *dest, const solution *source){
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){
     if(sol.n_facilities==0) return sol;
+    if(sol.n_facilities>=2) return solution_whitaker_hill_climbing(prob,sol);
+    // This is the old hill climbing, I will only use it for solutions of size 1, which should be trivial.
     solution best = sol;
     //
     int improvement = 1;
@@ -246,6 +248,107 @@ solution solution_hill_climbing(const problem *prob, solution sol){
         }
     }
     return best;
+}
+
+void solution_client_2_nearest(const problem *prob, const solution *sol,
+        int cli, int *phi1, int *phi2){
+    // Nearest facility
+    *phi1 = -1;
+    for(int p=0;p<sol->n_facilities;p++){
+        int fac = sol->facilities[p];
+        if(*phi1==-1 || prob->distances[*phi1][cli]>prob->distances[fac][cli]){
+            *phi1 = fac;
+        }
+    }
+    // 2nd nearest
+    *phi2 = -1;
+    for(int p=0;p<sol->n_facilities;p++){
+        int fac = sol->facilities[p];
+        if(*phi1==fac) continue;
+        if(*phi2==-1 || prob->distances[*phi2][cli]>prob->distances[fac][cli]){
+            *phi2 = fac;
+        }
+    }
+}
+
+void solution_findout(const problem *prob, const solution *sol, int f_ins, lint *v,
+        const int *phi1, const int *phi2, int *out_f_rem, lint *out_profit){
+    // NOTE: v must be intialized with -1 and have size equal to prob->n_facilities.
+    // ^ It is always reset to that state after computation.
+    lint w = 0;
+    for(int k=0;k<sol->n_facilities;k++){
+        v[sol->facilities[k]] = 0;
+    }
+    //
+    for(int u=0;u<prob->n_clients;u++){
+        lint delta = prob->distances[phi1[u]][u]-prob->distances[f_ins][u];
+        if(delta>0){ // Profit by adding f_ins, because is nearly.
+            w += delta;
+        }else{ // Loss by removing phi[u], because it is nearly.
+            if(v[phi1[u]]==-1) continue; // phi1[u] not part of the solution.
+            if(prob->distances[f_ins][u]<prob->distances[phi2[u]][u]){
+                v[phi1[u]] += prob->distances[f_ins][u]-prob->distances[phi1[u]][u];
+            }else{
+                v[phi1[u]] += prob->distances[phi2[u]][u]-prob->distances[phi1[u]][u];
+            }
+        }
+    }
+    //
+    int k_rem = 0;
+    for(int k=1;k<sol->n_facilities;k++){
+        assert(v[sol->facilities[k]]>=0);
+        if(v[sol->facilities[k]]<v[sol->facilities[k_rem]]) k_rem = k;
+    }
+    *out_f_rem = sol->facilities[k_rem];
+    *out_profit = w - v[*out_f_rem];
+    // Reset v
+    for(int k=0;k<sol->n_facilities;k++){
+        v[sol->facilities[k]] = -1;
+    }
+}
+
+
+solution solution_whitaker_hill_climbing(const problem *prob, solution sol){
+    assert(sol.n_facilities>=2);
+    // -1 initialized array for solution_findout:
+    lint v[MAX_FACILITIES];
+    for(int i=0;i<prob->n_facilities;i++) v[i] = -1;
+    // Nearest facilities
+    int phi1[MAX_CLIENTS];
+    int phi2[MAX_CLIENTS];
+    //
+    while(1){
+        // Array if facility appears in the solution
+        int used[MAX_FACILITIES];
+        for(int i=0;i<prob->n_facilities;i++) used[i] = 0;
+        for(int k=0;k<sol.n_facilities;k++) used[sol.facilities[k]] = 1;
+        // Clients nearest to the solution
+        for(int i=0;i<prob->n_clients;i++){
+            solution_client_2_nearest(prob,&sol,i,&phi1[i],&phi2[i]);
+        }
+        // Insertion candidate:
+        lint best_delta = 0;
+        int best_rem = -1;
+        int best_ins = -1;
+        for(int f=0;f<prob->n_facilities;f++){
+            if(used[f]) continue;
+            // Find the best option for removal:
+            int f_rem;
+            lint delta_profit;
+            solution_findout(prob,&sol,f,v,phi1,phi2,&f_rem,&delta_profit);
+            if(delta_profit>best_delta){
+                best_delta = delta_profit;
+                best_rem = f_rem;
+                best_ins = f;
+            }
+        }
+        // Stop when done:
+        if(best_ins==-1) break;
+        // Perform swap:
+        solution_remove(prob,&sol,best_rem);
+        solution_add(prob,&sol,best_ins);
+    }
+    return sol;
 }
 
 solution random_solution(const problem *prob, int size){

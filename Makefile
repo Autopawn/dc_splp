@@ -2,18 +2,21 @@ targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
 THREADS = 16
 
-all: dsa dsa_ls dsa_hausdorff randomhc many_bin
+all: dsa_ls dsa_bests dsa_hausdorff randomhc many_bin
 
 bin:
 	mkdir -p bin
 tests:
 	mkdir -p tests
-dsa: bin
-	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-o ../bin/dsa -lm -lpthread
+# dsa: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-o ../bin/dsa -lm -lpthread
 dsa_ls: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 		-D LOCAL_SEARCH -o ../bin/dsa_ls -lm -lpthread
+dsa_bests: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D ONLY_BESTS -o ../bin/dsa_best -lm -lpthread
 randomhc: bin
 		cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) mainhc.c \
 		-o ../bin/randomhc -lm -lpthread

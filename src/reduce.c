@@ -155,6 +155,38 @@ void *reduce_thread_execution(void *arg){
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
 // Reduces an array (sols) with pointers to a set of solutions to target_n size, freeing memory of the discarted ones. *n_sols is modified.
+// If ONLY_BESTS macro is defined, only pick the best solutions
+#ifdef ONLY_BESTS
+
+void reduce_solutions(const problem *prob,
+        solution **sols, int *n_sols, int target_n, int vision_range){
+    // If the vision range is -1, use random selection.
+    if(vision_range==-1 && *n_sols>target_n){
+        // Put target_n randomly selected solutions first on the array:
+        for(int i=0;i<target_n;i++){
+            int choice = i+rand()%(*n_sols-i);
+            solution *aux = sols[i];
+            sols[i] = sols[choice];
+            sols[choice] = aux;
+        }
+    }else{
+        // Sort solution pointers from larger to smaller value of the solution.
+        qsort(sols,*n_sols,sizeof(solution*),solution_value_cmp_inv);
+        #ifdef VERBOSE_BASESORTED
+            printf("#BASESORTED\n");
+            print_solsets(sols,*n_sols);
+        #endif
+    }
+    // Free other solutions:
+    for(int i=target_n;i<*n_sols;i++){
+        free(sols[i]);
+    }
+    // Set the amount of solutions right.
+    *n_sols = target_n;
+}
+
+#else
+
 #if THREADS>0
 
 void reduce_solutions(const problem *prob,
@@ -186,6 +218,7 @@ void reduce_solutions(const problem *prob,
     #endif
     // Return if there is no need of reduction.
     if(*n_sols<=target_n) return;
+
     // Double linked structure to know solutions that haven't yet been discarted:
     int *discarted = safe_malloc((*n_sols)*sizeof(int));
     int *nexts = safe_malloc((*n_sols)*sizeof(int));
@@ -469,4 +502,5 @@ void reduce_solutions(const problem *prob,
     free(prevs);
 }
 
+#endif
 #endif
