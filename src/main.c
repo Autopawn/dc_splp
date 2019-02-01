@@ -55,16 +55,16 @@ int main(int argc, char **argv){
     assert(vision_range>=-1);
     printf("Max solutions to show: %d\n",max_to_show);
 
+    // ---@> Start counting time
+    clock_t start = clock();
+    struct timeval elapsed_start;
+    gettimeofday(&elapsed_start,NULL);
+
     // Load problem file:
     problem *prob = new_problem_load(input_file);
     // Get the solutions:
     int n_sols, max_size_found;
     printf("Starting search...\n");
-
-    // ---@> Start counting time
-    clock_t start = clock();
-    struct timeval elapsed_start;
-    gettimeofday(&elapsed_start,NULL);
 
     //
     solution **sols = new_find_best_solutions(prob,

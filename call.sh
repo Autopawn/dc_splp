@@ -1,6 +1,10 @@
 fnames=$(find splp/ | grep -v 'kmedian' | grep -v '.opt' | grep -v '.bub' | grep -v 'README' | grep -v '.c' | grep -v '.lst' | grep -v '~')
 
-parameters="n_100_200 n_200_400 n_200_-1 h_200_400"
+parameters="\
+    dc_norm_m_200_400 dc_norm_s_200_400 \
+    dc_haus_m_200_400 dc_haus_s_200_400 \
+    dc_norm_m_200_-1 dc_norm_s_200_-1 \
+    dc_best_m_200_400 dc_best_s_200_400 "
 
 make
 
