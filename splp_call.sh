@@ -16,10 +16,13 @@ for params in $parameters; do
         if [[ -d $p ]]; then
             if [ -n "$problems" ]; then
                 gname="$(echo $group | tr / _ | cut -d'_' -f2-)"
-                name="$paramrm -rf res || trues"_"$gname"
-                qsub -N $name solve.sh \
+                n2=$(echo $params | cut -d'_' -f2)
+                n3=$(echo $params | cut -d'_' -f3)
+                ng=$(echo $params | cut -d'_' -f4-5)
+                name=dc_"${n2:0:1}${n3:0:1}"_"$ng"_"$gname"
+                qsub -N $name splp_solve.sh \
                     -F "$params \"$group\" \"$problems\"" || \
-                bash solve.sh $params "$group" "$problems"
+                bash splp_solve.sh $params "$group" "$problems"
             fi
             problems=""
             group="$p"

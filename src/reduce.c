@@ -182,7 +182,7 @@ void reduce_solutions(const problem *prob,
         free(sols[i]);
     }
     // Set the amount of solutions right.
-    *n_sols = target_n;
+    if(*n_sols>target_n) *n_sols = target_n;
 }
 
 #else
