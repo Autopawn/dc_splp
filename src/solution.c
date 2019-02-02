@@ -174,6 +174,7 @@ lint solution_dissimilitude(const problem *prob, const solution *sol_a, const so
                 disim += min_dist;
             }
         }else{
+            // MODE B
             // Precompute array of presences of the solution b
             char *presence = safe_malloc(sizeof(char)*prob->n_facilities);
             memset(presence,0,sizeof(char)*prob->n_facilities);
@@ -222,7 +223,9 @@ void solution_copy(const problem *prob, solution *dest, const solution *source){
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){
     if(sol.n_facilities==0) return sol;
-    if(sol.n_facilities>=2) return solution_whitaker_hill_climbing(prob,sol);
+    #ifndef DONT_USE_WHITAKER
+        if(sol.n_facilities>=2) return solution_whitaker_hill_climbing(prob,sol);
+    #endif
     // This is the old hill climbing, I will only use it for solutions of size 1, which should be trivial.
     solution best = sol;
     //
@@ -275,31 +278,31 @@ void solution_findout(const problem *prob, const solution *sol, int f_ins, lint 
         const int *phi1, const int *phi2, int *out_f_rem, lint *out_profit){
     // NOTE: v must be intialized with -1 and have size equal to prob->n_facilities.
     // ^ It is always reset to that state after computation.
-    lint w = 0;
+    lint w = -prob->facility_cost[f_ins];
     for(int k=0;k<sol->n_facilities;k++){
-        v[sol->facilities[k]] = 0;
+        v[sol->facilities[k]] = -prob->facility_cost[sol->facilities[k]];
     }
     //
     for(int u=0;u<prob->n_clients;u++){
         lint delta = prob->distances[phi1[u]][u]-prob->distances[f_ins][u];
-        if(delta>0){ // Profit by adding f_ins, because is nearly.
-            w += delta;
+        if(delta>=0){ // Profit by adding f_ins, because is nearly.
+            w += prob->weights[u]*delta;
         }else{ // Loss by removing phi[u], because it is nearly.
             if(v[phi1[u]]==-1) continue; // phi1[u] not part of the solution.
             if(prob->distances[f_ins][u]<prob->distances[phi2[u]][u]){
-                v[phi1[u]] += prob->distances[f_ins][u]-prob->distances[phi1[u]][u];
+                v[phi1[u]] += prob->weights[u]*(prob->distances[f_ins][u]-prob->distances[phi1[u]][u]);
             }else{
-                v[phi1[u]] += prob->distances[phi2[u]][u]-prob->distances[phi1[u]][u];
+                v[phi1[u]] += prob->weights[u]*(prob->distances[phi2[u]][u]-prob->distances[phi1[u]][u]);
             }
         }
     }
     //
-    int k_rem = 0;
+    int f_rem = sol->facilities[0];
     for(int k=1;k<sol->n_facilities;k++){
-        assert(v[sol->facilities[k]]>=0);
-        if(v[sol->facilities[k]]<v[sol->facilities[k_rem]]) k_rem = k;
+        if(v[sol->facilities[k]]<v[f_rem]) f_rem = sol->facilities[k];
     }
-    *out_f_rem = sol->facilities[k_rem];
+    *out_f_rem = f_rem;
+
     *out_profit = w - v[*out_f_rem];
     // Reset v
     for(int k=0;k<sol->n_facilities;k++){
@@ -345,8 +348,10 @@ solution solution_whitaker_hill_climbing(const problem *prob, solution sol){
         // Stop when done:
         if(best_ins==-1) break;
         // Perform swap:
+        lint old_value = sol.value;
         solution_remove(prob,&sol,best_rem);
         solution_add(prob,&sol,best_ins);
+        assert(sol.value>old_value);
     }
     return sol;
 }

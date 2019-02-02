@@ -215,6 +215,16 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     #else
     fprintf(fp,"# Dissimilitude: MEAN_GEOMETRIC_ERROR\n");
     #endif
+    #ifdef FDIST_SUM_MODE
+    fprintf(fp,"# Facility_dist: SUM_OF_DELTAS\n");
+    #else
+    fprintf(fp,"# Facility_dist: MINIMUM\n");
+    #endif
+    #ifdef ONLY_BESTS
+    fprintf(fp,"# Reduction_mode: ONLY_BESTS\n");
+    #else
+    fprintf(fp,"# Reduction_mode: DISPERSE\n");
+    #endif
     // Print the solutions:
     if(n_sols==0){
         solution empty_sol = empty_solution();

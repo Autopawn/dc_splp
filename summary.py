@@ -71,30 +71,49 @@ for kind in ('opt','bub'):
     print("> PROBLEMS: "+kind.upper())
     print("="*80)
     prob_names = sorted(list(problems[kind]))
-    for prob in prob_names:
-        joined = os.path.join(*prob)
-        fname = os.path.join(prob_dir,joined)
-        opt_data = read_optimum(fname)
-        # --- Maximums
-        n_opt_facilities = len(set(opt_data[0]))
-        n_clients = len(opt_data[0])
-        max_facilities = max(max_facilities,n_opt_facilities)
-        max_clients = max(max_clients,n_clients)
-        # --- Get the solution
-        sol_fname = os.path.join(sols_dir,joined)
-        sol_fname = sol_fname[:-4]+"_ls"
-        sol_data = read_solution(sol_fname)
-        # --- Check for optimality
-        if sol_data[0] is None:
-            show = None
-        else:
-            opt = is_optimum(sol_data,opt_data)
-            if opt:
-                show = 1
+    #
+    group_names = set([x[0] for x in prob_names])
+
+    for group in group_names:
+        group_prob_names = [x for x in prob_names if x[0]==group]
+
+        strings = []
+        optis = 0
+
+        for prob in group_prob_names:
+            joined = os.path.join(*prob)
+            fname = os.path.join(prob_dir,joined)
+            opt_data = read_optimum(fname)
+            # --- Maximums
+            n_opt_facilities = len(set(opt_data[0]))
+            n_clients = len(opt_data[0])
+            max_facilities = max(max_facilities,n_opt_facilities)
+            max_clients = max(max_clients,n_clients)
+            # --- Get the solution
+            sol_fname = os.path.join(sols_dir,joined)
+            sol_fname = sol_fname[:-4]+"_ls"
+            sol_data = read_solution(sol_fname)
+            # --- Check for optimality
+            if sol_data[0] is None:
+                show = None
             else:
-                show = 0
-        perce = 0 if sol_data[1] is None else sol_data[1]/opt_data[1]
-        print("%-40s %5s %5d %5d %12.3f %12.3f %8.4f"%(joined,show,n_clients,n_opt_facilities,sol_data[1] or 0,opt_data[1],perce))
+                opt = is_optimum(sol_data,opt_data)
+                if opt:
+                    show = 1
+                else:
+                    show = 0
+            perce = 0 if sol_data[1] is None else sol_data[1]/opt_data[1]
+            if show==1:
+                optis += 1
+            else:
+                strings.append("%-40s %5s %5d %5d %12.3f %12.3f %8.4f"%(
+                    joined,show,n_clients,n_opt_facilities,sol_data[1] or 0,opt_data[1],perce))
+
+
+        print("-"*20)
+        print("%-40s opt:%3d/%-3d"%(group,optis,len(group_prob_names)))
+        for stri in strings:
+            print(stri)
 
 print("max_opt_facilities %d"%max_facilities)
 print("max_clients %d"%max_clients)

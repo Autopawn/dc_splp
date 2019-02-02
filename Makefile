@@ -35,6 +35,10 @@ dc_haus_s: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D HAUSDORFF \
 		-o ../bin/dc_haus_s -lm -lpthread
+# dc_nonw_m: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 	-D LOCAL_SEARCH -D DONT_USE_WHITAKER \
+# 	-o ../bin/dc_nonw_m -lm -lpthread
 
 randomhc: bin
 		cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) mainhc.c \
