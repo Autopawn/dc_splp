@@ -54,7 +54,7 @@ solution **new_find_best_solutions(problem* prob,
     }
     if(*n_iterations==-1) *n_iterations = MAX_SOL_SIZE;
     //
-    if(prob->size_restriction==-1){
+    //if(prob->size_restriction==-1){
         printf("Merging pools...\n");
         // Merge all solution pointers into one final array:
         solution **final = safe_malloc(sizeof(solution*)*total_pools_size);
@@ -72,21 +72,21 @@ solution **new_find_best_solutions(problem* prob,
         *final_n = current_sol_n;
         // Return it
         return final;
-    }else{
-        printf("Picking pool of size p=%d ...\n",prob->size_restriction);
-        // Free other arrays:
-        for(int i=1;i<=MAX_FACILITIES;i++){
-            if(pools[i]!=NULL && i!=prob->size_restriction){
-                for(int k=0;k<pools_size[i];k++){
-                    free(pools[i][k]);
-                }
-                free(pools[i]);
-            }
-        }
-        // Pick array only for the solutions of size prob->size_restriction
-        *final_n = pools_size[prob->size_restriction];
-        return pools[prob->size_restriction];
-    }
+    // }else{
+    //     printf("Picking pool of size p=%d ...\n",prob->size_restriction);
+    //     // Free other arrays:
+    //     for(int i=1;i<=MAX_FACILITIES;i++){
+    //         if(pools[i]!=NULL && i!=prob->size_restriction){
+    //             for(int k=0;k<pools_size[i];k++){
+    //                 free(pools[i][k]);
+    //             }
+    //             free(pools[i]);
+    //         }
+    //     }
+    //     // Pick array only for the solutions of size prob->size_restriction
+    //     *final_n = pools_size[prob->size_restriction];
+    //     return pools[prob->size_restriction];
+    // }
 }
 
 #if THREADS>0

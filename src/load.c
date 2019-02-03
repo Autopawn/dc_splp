@@ -28,10 +28,15 @@ problem *load_simple_format(FILE *fp){
     printf("N Clients: %d\n",prob->n_clients);
     assert(prob->n_clients<=MAX_CLIENTS);
 
-    // Third argument must be 0
-    int trd_num = -1;
-    int trd_num_read = fscanf(fp,"%d",&trd_num);
-    assert(trd_num_read==1 && trd_num==0);
+    // Third argument is the size restriction.
+    int trd_num;
+    if(fscanf(fp,"%d",&trd_num)!=1){
+        fprintf(stderr,"ERROR: size restriction expected!\n");
+        exit(1);
+    }
+    if(trd_num==0) trd_num=-1;
+    prob->size_restriction = trd_num;
+    printf("Size restriction: %d\n",prob->size_restriction);
 
     // For each facility
     for(int i=0;i<prob->n_facilities;i++){
@@ -60,7 +65,6 @@ problem *load_simple_format(FILE *fp){
 
     // Unsetted values:
     prob->multiplier = 1;
-    prob->size_restriction = -1; // SPLP
     prob->transport_cost = 1;
     for(int j=0;j<prob->n_clients;j++){
         prob->weights[j] = 1;

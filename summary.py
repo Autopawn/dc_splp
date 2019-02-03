@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 
 def get_dirs(dir,ext=None):
     dirs = []
@@ -15,7 +16,9 @@ def get_dirs(dir,ext=None):
 
 def read_optimum(fname):
     fi = open(fname)
-    k = fi.read().split()
+    for lin in fi:
+        if "#" in lin: continue
+        k = lin.split()
     fi.close()
     assigns = [int(x) for x in k[:-1]]
     value = float(k[-1])
@@ -79,6 +82,8 @@ for kind in ('opt','bub'):
 
         strings = []
         optis = 0
+        nones = 0
+        perces = []
 
         for prob in group_prob_names:
             joined = os.path.join(*prob)
@@ -105,13 +110,16 @@ for kind in ('opt','bub'):
             perce = 0 if sol_data[1] is None else sol_data[1]/opt_data[1]
             if show==1:
                 optis += 1
-            else:
+            elif show==0:
                 strings.append("%-40s %5s %5d %5d %12.3f %12.3f %8.4f"%(
                     joined,show,n_clients,n_opt_facilities,sol_data[1] or 0,opt_data[1],perce))
-
+                perces.append(perce)
+            else:
+                nones += 1
 
         print("-"*20)
-        print("%-40s opt:%3d/%-3d"%(group,optis,len(group_prob_names)))
+        perce = "  --  " if len(perces)==0 else "%9.6f"%(np.mean(perces))
+        print("%-40s opt:%3d/%-3d   nons:%3d/%-3d perce:%s"%(group,optis,len(group_prob_names),nones,len(group_prob_names),perce))
         for stri in strings:
             print(stri)
 

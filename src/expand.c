@@ -51,8 +51,10 @@ void *expand_thread_execution(void *arg){
         *new_sol = *fsol->origin;
         solution_add(args->prob,new_sol,fsol->newf);
         lint delta = new_sol->value - fsol->origin->value;
-        // When size_restriction is active, the solution is never filtered
-        if(delta<=0 && args->prob->size_restriction==-1){
+        // // When size_restriction is active, the solution is never filtered
+        // if(delta<=0 && args->prob->size_restriction==-1){
+        // NOTE: Now it is always filtered.
+        if(delta<=0){
             free(new_sol);
             args->out_sols[r] = NULL;
         }else{

@@ -1,6 +1,7 @@
 .remote-sync.json
 
 splp
+splp_custom
 data/*
 result
 callgrind.out.*

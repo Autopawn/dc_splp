@@ -276,7 +276,7 @@ void solution_client_2_nearest(const problem *prob, const solution *sol,
 
 void solution_findout(const problem *prob, const solution *sol, int f_ins, lint *v,
         const int *phi1, const int *phi2, int *out_f_rem, lint *out_profit){
-    // NOTE: v must be intialized with -1 and have size equal to prob->n_facilities.
+    // NOTE: v must be intialized with LINT_MIN and have size equal to prob->n_facilities.
     // ^ It is always reset to that state after computation.
     lint w = -prob->facility_cost[f_ins];
     for(int k=0;k<sol->n_facilities;k++){
@@ -288,7 +288,7 @@ void solution_findout(const problem *prob, const solution *sol, int f_ins, lint 
         if(delta>=0){ // Profit by adding f_ins, because is nearly.
             w += prob->weights[u]*delta;
         }else{ // Loss by removing phi[u], because it is nearly.
-            if(v[phi1[u]]==-1) continue; // phi1[u] not part of the solution.
+            if(v[phi1[u]]==MIN_LINT) continue; // phi1[u] not part of the solution.
             if(prob->distances[f_ins][u]<prob->distances[phi2[u]][u]){
                 v[phi1[u]] += prob->weights[u]*(prob->distances[f_ins][u]-prob->distances[phi1[u]][u]);
             }else{
@@ -306,7 +306,7 @@ void solution_findout(const problem *prob, const solution *sol, int f_ins, lint 
     *out_profit = w - v[*out_f_rem];
     // Reset v
     for(int k=0;k<sol->n_facilities;k++){
-        v[sol->facilities[k]] = -1;
+        v[sol->facilities[k]] = MIN_LINT;
     }
 }
 
@@ -315,7 +315,7 @@ solution solution_whitaker_hill_climbing(const problem *prob, solution sol){
     assert(sol.n_facilities>=2);
     // -1 initialized array for solution_findout:
     lint v[MAX_FACILITIES];
-    for(int i=0;i<prob->n_facilities;i++) v[i] = -1;
+    for(int i=0;i<prob->n_facilities;i++) v[i] = MIN_LINT;
     // Nearest facilities
     int phi1[MAX_CLIENTS];
     int phi2[MAX_CLIENTS];
