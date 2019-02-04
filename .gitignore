@@ -13,6 +13,7 @@ splp_*.e*
 pm_*.e*
 splp_*.o*
 pm_*.o*
+dc_*
 paper
 *.png
 res
