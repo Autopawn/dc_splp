@@ -1,6 +1,10 @@
-#
+#!/bin/bash
+#PBS -l cput=8000:00:01
+#PBS -l walltime=8000:00:01
+#PBS -l mem=20gb
+#PBS -N lpsolver
 
-target="splp_custom"
+target="custom"
 
 # Tunning for the HPC cluster:
 if [ -n "${PBS_O_WORKDIR+1}" ]; then
@@ -15,6 +19,7 @@ files=$(find $target | grep '\.lp')
 for file in $files; do
     result="${file%.lp}.opt"
     if [[ ! -e "$result" ]]; then
+        touch "$result"
         tmpfile=$(mktemp /tmp/splp_custom_lpsolve.XXXXXXXX)
         # Solve:
         time_start=$(date +%s)
