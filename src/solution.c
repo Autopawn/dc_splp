@@ -21,10 +21,14 @@ int solution_value_cmp_inv(const void *a, const void *b){
 int solution_cmp(const void *a, const void *b){
     const solution **aa = (const solution **) a;
     const solution **bb = (const solution **) b;
-    int diff;
+    int diff=0;
     //
-    diff = (*bb)->value - (*aa)->value; // NOTE: fn. can be used to sort by decreasing value.
-    if(diff!=0) return diff;
+    lint ldiff = (*bb)->value - (*aa)->value; // NOTE: fn. can be used to sort by decreasing value.
+    if(ldiff!=0){
+        if(ldiff>0) diff=1;
+        if(ldiff<0) diff=-1;
+        return diff;
+    }
     //
     diff = (*bb)->n_facilities - (*aa)->n_facilities;
     if(diff!=0) return diff;
@@ -222,34 +226,42 @@ void solution_copy(const problem *prob, solution *dest, const solution *source){
 
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){
+    lint old_value = sol.value;
     if(sol.n_facilities==0) return sol;
+    solution best;
     #ifndef DONT_USE_WHITAKER
-        if(sol.n_facilities>=2) return solution_whitaker_hill_climbing(prob,sol);
-    #endif
-    // This is the old hill climbing, I will only use it for solutions of size 1, which should be trivial.
-    solution best = sol;
-    //
-    int improvement = 1;
-    while(improvement){
-        improvement = 0;
-        // Remove a facility:
-        solution cand0; solution_copy(prob,&cand0,&best);
-        for(int k=0;k<sol.n_facilities;k++){
-            assert(cand0.n_facilities==sol.n_facilities);
-            solution cand1; solution_copy(prob,&cand1,&cand0);
-            solution_remove(prob,&cand1,cand0.facilities[k]);
-            // Add facility j:
-            for(int j=0;j<prob->n_facilities;j++){
-                solution cand2; solution_copy(prob,&cand2,&cand1);
-                solution_add(prob,&cand2,j);
-                if(cand2.n_facilities==cand0.n_facilities &&
-                        cand2.value>best.value){
-                    solution_copy(prob,&best,&cand2);
-                    improvement = 1;
+        if(sol.n_facilities>=2){
+            best = solution_whitaker_hill_climbing(prob,sol);
+        }else
+    #else
+        {
+        // This is the old hill climbing, I will only use it for solutions of size 1, which should be trivial.
+        best = sol;
+        //
+        int improvement = 1;
+        while(improvement){
+            improvement = 0;
+            // Remove a facility:
+            solution cand0; solution_copy(prob,&cand0,&best);
+            for(int k=0;k<sol.n_facilities;k++){
+                assert(cand0.n_facilities==sol.n_facilities);
+                solution cand1; solution_copy(prob,&cand1,&cand0);
+                solution_remove(prob,&cand1,cand0.facilities[k]);
+                // Add facility j:
+                for(int j=0;j<prob->n_facilities;j++){
+                    solution cand2; solution_copy(prob,&cand2,&cand1);
+                    solution_add(prob,&cand2,j);
+                    if(cand2.n_facilities==cand0.n_facilities &&
+                            cand2.value>best.value){
+                        solution_copy(prob,&best,&cand2);
+                        improvement = 1;
+                    }
                 }
             }
         }
-    }
+        }
+    #endif
+    assert(best.value>=old_value);
     return best;
 }
 

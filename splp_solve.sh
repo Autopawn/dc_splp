@@ -24,6 +24,9 @@ files="$3"
 resfolder=$4
 
 mkdir -p "$resfolder/$1/$group"
+echo group "$group" > "$resfolder/$1/$group/problem_list"
+echo '$1' "$1" >> "$resfolder/$1/$group/problem_list"
+echo "$files" | tr " " "\n" >> "$resfolder/$1/$group/problem_list"
 for prob in $files; do
     if [ ! -f "$resfolder/$1/""$prob""_ls" ]; then
         ./bin/"$exec" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"

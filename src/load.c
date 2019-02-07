@@ -100,6 +100,7 @@ problem *load_orlib_format(FILE *fp){
     assert(prob->n_clients<=MAX_CLIENTS);
 
     // For each facility
+    int cap_0_warn = 0;
     for(int i=0;i<prob->n_facilities;i++){
 
         // Read facility capacity
@@ -108,7 +109,10 @@ problem *load_orlib_format(FILE *fp){
             fprintf(stderr,"ERROR: facility capacity expected!\n");
             exit(1);
         }
-        assert(capacity==0);
+        if(capacity!=0 && !cap_0_warn){
+            fprintf(stderr,"WARNING: facility capacity is %lf (not 0)!\n",capacity);
+            cap_0_warn = 1;
+        }
 
         // Read facility cost
         double facility_cost;
