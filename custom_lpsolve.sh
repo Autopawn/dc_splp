@@ -2,7 +2,6 @@
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
 #PBS -l mem=20gb
-#PBS -N lpsolver
 
 target="custom"
 
@@ -14,12 +13,15 @@ else
     export lp_solve="lp_solve"
 fi
 
-files=$(find $target | grep '\.lp')
+files=$(find $target | grep -v splpl_ | grep '\.lp')
+files="$files $(find $target | grep splpl_ | grep '\.lp')"
 
 for file in $files; do
     result="${file%.lp}.opt"
     if [[ ! -e "$result" ]]; then
         touch "$result"
+        # NOTE: Race condition, the previous 2 should be atomic.
+        # There is a very very very small chance of race condition problems 
         tmpfile=$(mktemp /tmp/splp_custom_lpsolve.XXXXXXXX)
         # Solve:
         time_start=$(date +%s)

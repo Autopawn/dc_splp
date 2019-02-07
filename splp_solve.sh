@@ -1,7 +1,12 @@
-#!/bin/bash
+#!/bin/bash -e
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
 #PBS -l mem=10gb
+
+if [ "$#" -ne 4 ]; then
+    echo "4 arguments are required!"
+    exit 1
+fi
 
 if [ -n "${PBS_O_WORKDIR+1}" ]; then
     cd "$PBS_O_WORKDIR"
@@ -16,7 +21,11 @@ fi
 group="$2"
 files="$3"
 
-mkdir -p "res/$1/$group"
+resfolder=$4
+
+mkdir -p "$resfolder/$1/$group"
 for prob in $files; do
-    ./bin/"$exec" "$pz" "$vr" 10 "$prob" "res/$1/$prob" "res/$1/""$prob""_ls"
+    if [ ! -f "$resfolder/$1/""$prob""_ls" ]; then
+        ./bin/"$exec" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
+    fi
 done

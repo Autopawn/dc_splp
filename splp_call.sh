@@ -1,4 +1,20 @@
-fnames=$(find splp/ | grep -v 'kmedian' | grep -v '.opt' | grep -v '.bub' | grep -v 'README' | grep -v '.c' | grep -v '.lst' | grep -v '~')
+#!/bin/bash
+
+if [ "$#" -ne 2 ]; then
+    echo "usage: $0 <target_folder> <res_folder>"
+    echo "e.g.:  $0 \"splp\" \"res\""
+    echo "e.g.:  $0 \"custom\" \"custom_res\""
+    echo "also, remember to 'make'!"
+    exit 1
+fi
+
+target=$1
+resfolder=$2
+
+fnames=$(find $target | tac | grep -v 'kmedian' | \
+    grep -v '\.opt' | grep -v '\.bub' | grep -v 'README' | \
+    grep -v '\.c' | grep -v '\.lst' | grep -v '~' | \
+    grep -v 'capinfo\.txt' | grep -v 'capmst1\.txt' | grep -v 'capmst2\.txt')
 
 parameters="\
     dc_norm_m_200_400 dc_norm_s_200_400 \
@@ -6,8 +22,7 @@ parameters="\
     dc_norm_m_200_-1 dc_norm_s_200_-1 \
     dc_best_m_200_400 dc_best_s_200_400 "
 
-make
-
+# make
 # rm -rf res || true
 
 for params in $parameters; do
@@ -21,8 +36,8 @@ for params in $parameters; do
                 ng=$(echo $params | cut -d'_' -f4-5)
                 name=dc_"${n2:0:1}${n3:0:1}"_"$ng"_"$gname"
                 qsub -N $name splp_solve.sh \
-                    -F "$params \"$group\" \"$problems\"" || \
-                bash splp_solve.sh $params "$group" "$problems"
+                    -F "$params \"$group\" \"$problems\" \"$resfolder\"" || \
+                bash splp_solve.sh $params "$group" "$problems" "$resfolder"
             fi
             problems=""
             group="$p"

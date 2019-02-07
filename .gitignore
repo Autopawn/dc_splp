@@ -1,7 +1,10 @@
 .remote-sync.json
 
 splp
+res
 custom
+custom_res
+
 data/*
 result
 callgrind.out.*
@@ -16,7 +19,6 @@ pm_*.o*
 dc_*
 paper
 *.png
-res
 delme*
 no_parallel.txt
 
