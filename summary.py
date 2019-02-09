@@ -60,12 +60,21 @@ def read_problem(fname):
 
 def read_solution(fname):
     if not os.path.isfile(fname):
-        return None,None
+        return None,None,None,None,None
     # ---
     fi = open(fname)
     assigns = None
     value = None
+    time = None
+    iters = None
+    finalsols = None
     for lin in fi:
+        if "# Time:" in lin:
+            time = float(lin.split(" ")[-1])
+        if "# Iterations:" in lin:
+            iters = float(lin.split(" ")[-1])
+        if "# Final_solutions:" in lin:
+            finalsols = float(lin.split(" ")[-1])
         if (assigns is None) and ("Assigns:" in lin):
             assigns = [int(x) for x in lin.split()[1:]]
         if (value is None) and ("Value:" in lin):
@@ -75,19 +84,24 @@ def read_solution(fname):
     fi.close()
     assert(assigns is not None)
     assert(value is not None)
+    assert(time is not None)
     #
-    return assigns,value
+    return assigns,value,time,iters,finalsols
 
-def is_optimum(sol,opt):
-    opt_assi,opt_val,_ = opt
-    sol_assi,sol_val = sol
+def is_optimum(sol,opt,can_be_better):
+    opt_assi = opt[0]
+    opt_val = opt[1]
+    sol_assi = sol[0]
+    sol_val = sol[1]
     if sol_assi is None:
         assert(sol_val is None)
         return False
     sol_facts = set(sol_assi)
     opt_facts = set(opt_assi)
     if sol_facts == opt_facts: return True
-    if sol_val <= opt_val: return True
+    if sol_val <= opt_val:
+        assert(can_be_better or sol_val<=opt_val+0.01)
+        return True
     return False
 
 problems = {}
@@ -109,10 +123,7 @@ for kind in ('opt','bub'):
         # Find the specific problems for this group:
         group_prob_names = [x for x in prob_names if tuple(x[:-1])==group]
 
-        strings = []
-        optis = 0
-        nones = 0
-        perces = []
+        strbases = {}
         nfacs = []
         nclis = []
         opt_nfacs = []
@@ -121,8 +132,8 @@ for kind in ('opt','bub'):
 
         for prob in group_prob_names:
             joined = os.path.join(*prob)
-            fname = os.path.join(prob_dir,joined)
-            prob_fname = fname.replace('.'+kind,'')
+            opt_fname = os.path.join(prob_dir,joined)
+            prob_fname = opt_fname.replace('.'+kind,'')
             if not os.path.isfile(prob_fname):
                 print("ERROR: %s does not exists."%prob_fname)
                 sys.exit(1)
@@ -130,33 +141,16 @@ for kind in ('opt','bub'):
             nfacs.append(n)
             nclis.append(m)
             ps.append(p)
-            opt_data = read_optimum(fname)
+            opt_data = read_optimum(opt_fname)
             # --- Maximums
             n_opt_facilities = len(set(opt_data[0]))
             n_clients = len(opt_data[0])
             opt_nfacs.append(n_opt_facilities)
-            # --- Get the solution
-            sol_fname = os.path.join(sols_dir,joined)
-            sol_fname = sol_fname[:-4]+"_ls"
-            sol_data = read_solution(sol_fname)
-            # --- Check for optimality
-            perce = 0
-            show = False
-            if sol_data[0] is None:
-                nones += 1
-            else:
-                if opt_data[2] is not None:
-                    opt_times.append(opt_data[2])
-                opt = is_optimum(sol_data,opt_data)
-                if opt:
-                    optis += 1
-                else:
-                    show = True
-                perce = 0 if opt_data[1] is None else sol_data[1]/opt_data[1]
-            if show==1:
-                strings.append("%-30s %5d %5d %12.3f %12.3f %8.4f"%(
-                    joined,n_clients,n_opt_facilities,sol_data[1] or 0,opt_data[1],perce))
-                perces.append(perce)
+            if opt_data[2] is not None:
+                opt_times.append(opt_data[2])
+            strbases[prob_fname] = "%-35s  n:%5d  on:%5d  ov:%9.3f"%(
+                joined,n_clients,n_opt_facilities,opt_data[1])
+
         # Print problem and opt solutions description
         group_name = '/'.join(group)
         print("-"*20)
@@ -170,24 +164,66 @@ for kind in ('opt','bub'):
         max_opt_nfacs = np.max(opt_nfacs)
         opt_time_mean = float('inf') if len(opt_times)==0 else np.mean(opt_times)
         opt_time_std = float('inf') if len(opt_times)==0 else np.std(opt_times)
-        print("%-30s  (%d,probs)  n:%d-%d  m:%d-%d  p:%d-%d  on:%d-%d  otime:%f+-%f"%(group_name,
+        print("%-35s  (%d probs)  n:%d-%d  m:%d-%d  p:%d-%d  on:%d-%d  otime:%f+-%f"%(group_name,
             len(group_prob_names),
             min_nfacs,max_nfacs,
             min_nclis,max_nclis,
             min_p,max_p,
             min_opt_nfacs,max_opt_nfacs,
             opt_time_mean,opt_time_std))
-        # Print solutions description
-        if nones==0:
-            red = ''
-            noc = ''
-        else:
-            red = '\033[0;31m'
-            noc = '\033[0m'
-        perce = "  --  " if len(perces)==0 else "%9.6f"%(np.mean(perces))
-        print("%-30s opt:%3d/%-3d  %snons:%3d/%-3d%s perce:%s"%("",
-            optis,len(group_prob_names),
-            red,nones,len(group_prob_names),noc,
-            perce))
-        for stri in strings:
-            print(stri)
+
+        for mode in ('','_ls'):
+            strings = []
+            perces = []
+            times = []
+            iters = []
+            finals = []
+            optis = 0
+            nones = 0
+            for prob in group_prob_names:
+                joined = os.path.join(*prob)
+                # --- Get the solution
+                sol_fname = os.path.join(sols_dir,joined)
+                sol_fname = sol_fname[:-4]
+                sol_data = read_solution(sol_fname+mode)
+                opt_fname = os.path.join(prob_dir,joined)
+                opt_data = read_optimum(opt_fname)
+                prob_fname = opt_fname.replace('.'+kind,'')
+                # --- Check for optimality
+                perce = 0
+                show = False
+                if sol_data[0] is None:
+                    nones += 1
+                else:
+                    opt = is_optimum(sol_data,opt_data)
+                    if opt:
+                        optis += 1
+                    else:
+                        show = True
+                    perce = 0 if opt_data[1] is None else sol_data[1]/opt_data[1]
+                    times.append(sol_data[2])
+                    iters.append(sol_data[3])
+                    finals.append(sol_data[4])
+                if show:
+                    if mode=='_ls':
+                        strings.append(strbases[prob_fname]+"  v:%9.3f %8.4f"%(
+                            sol_data[1],perce))
+                    perces.append(perce)
+            # Print solutions description
+            if nones==0:
+                red = ''
+                noc = ''
+            else:
+                red = '\033[0;31m'
+                noc = '\033[0m'
+            perce = "    -    " if len(perces)==0 else "%9.6f"%(np.mean(perces))
+            time = "%8.3f+-%-8.3f"%(np.mean(times),np.std(times))
+            iter = "   -   "if len(iters)==0 else "%3d-%-3d"%(np.min(iters),np.max(iters))
+            final = "   -   "if len(finals)==0 else "%3d-%-3d"%(np.min(finals),np.max(finals))
+            print("%-35s  opt:%3d/%-3d  %snons:%3d/%-3d%s  perce:%s  t:%s  it:%s  fs:%s"%(
+                sols_dir+('' if mode=='' else "("+mode+")"),
+                optis,len(group_prob_names),
+                red,nones,len(group_prob_names),noc,
+                perce,time,iter,final))
+            for stri in strings:
+                print(stri)
