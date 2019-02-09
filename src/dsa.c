@@ -54,7 +54,7 @@ solution **new_find_best_solutions(problem* prob,
     }
     if(*n_iterations==-1) *n_iterations = MAX_SOL_SIZE;
     //
-    if(prob->size_restriction==-1){
+    //if(prob->size_restriction==-1){
         printf("Merging pools...\n");
         // Merge all solution pointers into one final array:
         solution **final = safe_malloc(sizeof(solution*)*total_pools_size);
@@ -72,36 +72,80 @@ solution **new_find_best_solutions(problem* prob,
         *final_n = current_sol_n;
         // Return it
         return final;
-    }else{
-        printf("Picking pool of size p=%d ...\n",prob->size_restriction);
-        // Free other arrays:
-        for(int i=1;i<=MAX_FACILITIES;i++){
-            if(pools[i]!=NULL && i!=prob->size_restriction){
-                for(int k=0;k<pools_size[i];k++){
-                    free(pools[i][k]);
-                }
-                free(pools[i]);
-            }
-        }
-        // Pick array only for the solutions of size prob->size_restriction
-        *final_n = pools_size[prob->size_restriction];
-        return pools[prob->size_restriction];
-    }
+    // }else{
+    //     printf("Picking pool of size p=%d ...\n",prob->size_restriction);
+    //     // Free other arrays:
+    //     for(int i=1;i<=MAX_FACILITIES;i++){
+    //         if(pools[i]!=NULL && i!=prob->size_restriction){
+    //             for(int k=0;k<pools_size[i];k++){
+    //                 free(pools[i][k]);
+    //             }
+    //             free(pools[i]);
+    //         }
+    //     }
+    //     // Pick array only for the solutions of size prob->size_restriction
+    //     *final_n = pools_size[prob->size_restriction];
+    //     return pools[prob->size_restriction];
+    // }
 }
+
+#if THREADS>0
+
+typedef struct {
+    int thread_id;
+    const problem *prob;
+    int n_sols;
+    solution **sols;
+} hillclimb_thread_args;
+
+void *hillclimb_thread_execution(void *arg){
+    hillclimb_thread_args *args = (hillclimb_thread_args *) arg;
+    for(int i=args->thread_id;i<args->n_sols;i+=THREADS){
+        solution enhanced = solution_hill_climbing(args->prob,*args->sols[i]);
+        *args->sols[i] = enhanced;
+    }
+    return NULL;
+}
+
+#endif
 
 void local_search_solutions(problem* prob, solution **sols, int *n_sols){
     if(*n_sols==0) return;
     printf("Performing local search for %d solutions...\n",*n_sols);
     // Perform HC for each solution:
-    for(int i=0;i<*n_sols;i++){
-        solution enhanced = solution_hill_climbing(prob,*sols[i]);
-        #ifdef VERBOSE_LOCAL_SEARCH
-            if(sols[i]->value!=enhanced.value){
-                printf("sol %d: %lld -> %lld\n",i,sols[i]->value,enhanced.value);
+    #if THREADS>0
+        // Do it multithreaded
+        pthread_t *threads = safe_malloc(sizeof(pthread_t)*THREADS);
+        hillclimb_thread_args *targs = safe_malloc(sizeof(hillclimb_thread_args)*THREADS);
+        for(int i=0;i<THREADS;i++){
+            targs[i].thread_id = i;
+            targs[i].prob = prob;
+            targs[i].n_sols = *n_sols;
+            targs[i].sols = (solution **) sols;
+            int rc = pthread_create(&threads[i],NULL,hillclimb_thread_execution,&targs[i]);
+            if(rc){
+                printf("Error %d on thread creation\n",rc);
+                exit(1);
             }
-        #endif
-        *sols[i] = enhanced;
-    }
+        }
+        // Join threads
+        for(int i=0;i<THREADS;i++){
+            pthread_join(threads[i],NULL);
+        }
+        //
+        free(targs);
+        free(threads);
+    #else
+        for(int i=0;i<*n_sols;i++){
+            solution enhanced = solution_hill_climbing(prob,*sols[i]);
+            #ifdef VERBOSE_LOCAL_SEARCH
+                if(sols[i]->value!=enhanced.value){
+                    printf("sol %d: %lld -> %lld\n",i,sols[i]->value,enhanced.value);
+                }
+            #endif
+            *sols[i] = enhanced;
+        }
+    #endif
     printf("Deleting repeated solutions...\n");
     // Sort solution pointers to indenfify repeated solutions (also in decreasing value).
     qsort(sols,*n_sols,sizeof(solution*),solution_cmp);

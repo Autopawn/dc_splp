@@ -3,6 +3,8 @@
 
 #include "common.h"
 
+#define ORLIB_FORMAT_COST_MULT 100000
+
 typedef struct {
     int n_facilities;
     // ^ Number of facilities in this solution.
@@ -24,6 +26,7 @@ lint solution_dissimilitude(const problem *prob,
         const solution *sol_a, const solution *sol_b);
 
 solution solution_hill_climbing(const problem *prob, solution sol);
+solution solution_whitaker_hill_climbing(const problem *prob, solution sol);
 
 int solution_value_cmp_inv(const void *a, const void *b);
 

@@ -4,8 +4,8 @@ if (( $# != 0 )); then
 fi
 
 # Values for p and b
-PP="4 8 12 16"
-BB="256 90 50 32"
+PP="4 8"
+BB="256 90"
 
 # Just in case, merge results now.
 bash merge_results.sh

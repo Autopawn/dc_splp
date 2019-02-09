@@ -1,3 +1,13 @@
+.remote-sync.json
+
+splp
+res
+custom
+custom_res
+
+data/*
+result
+callgrind.out.*
 tmp
 problems
 templates
@@ -6,10 +16,14 @@ splp_*.e*
 pm_*.e*
 splp_*.o*
 pm_*.o*
+dc_*
 paper
 *.png
+delme*
+no_parallel.txt
 
 tests
+
 vgcore.*
 bin
 results

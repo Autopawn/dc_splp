@@ -7,9 +7,15 @@
 #include <string.h>
 #include <assert.h>
 
-#define MAX_FACILITIES 500
-#define MAX_CLIENTS 500
-#define MAX_SOL_SIZE 20
+#if THREADS>0
+    #include <pthread.h>
+    #include <semaphore.h>
+#endif
+
+
+#define MAX_FACILITIES 2000
+#define MAX_CLIENTS 2000
+#define MAX_SOL_SIZE 100
 
 typedef long long int lint;
 typedef unsigned int uint;
@@ -27,12 +33,16 @@ typedef struct{
     // ^ Distance matrix between facilities and clients.
     lint fdistances[MAX_FACILITIES][MAX_FACILITIES];
     // ^ Distance matrix between facilities and facilities, used for solution comparison.
-    lint facility_fixed_cost;
+    lint facility_cost[MAX_FACILITIES];
     // ^ Cost of each facility.
     lint transport_cost;
     // ^ Cost of connecting one weight of unit one unit of distance.
     int size_restriction;
     // ^ When it is not -1, the returned solutions must be of that size, also there is no solution filtering in the expansion process.
+    lint multiplier;
+    // ^ Multiplier of the costs when working with floats.
+    int fnearest[MAX_FACILITIES][MAX_FACILITIES];
+    // ^ Index of the facilities, from nearest to farthest to each one
 } problem;
 
 // Auxiliar functions:
@@ -40,5 +50,8 @@ void *safe_malloc(size_t size);
 uint hash_int(uint x);
 void add_to_sorted(short *array, int *len, short val);
 void rem_of_sorted(short *array, int *len, short val);
+
+void problem_create_facility_dist_matrix(problem *prob);
+void problem_create_facility_nearest_matrix(problem *prob);
 
 #endif

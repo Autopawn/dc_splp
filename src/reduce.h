@@ -1,6 +1,8 @@
 #ifndef DSA_REDUCE_H
 #define DSA_REDUCE_H
 
+#include <pthread.h>
+
 #include "solution.h"
 #include "load.h"
 

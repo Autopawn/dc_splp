@@ -1,50 +1,62 @@
 targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
-all: dsa dsa_ls dsa_hausdorff randomhc
+THREADS = 16
+
+all: dc_norm_m dc_norm_s dc_best_m dc_best_s dc_haus_m dc_haus_s randomhc
 
 bin:
 	mkdir -p bin
 tests:
 	mkdir -p tests
-results:
-	mkdir -p results
+# dsa: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-o ../bin/dsa -lm -lpthread
+dc_norm_m: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH \
+		-o ../bin/dc_norm_m -lm -lpthread
+dc_norm_s: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D FDIST_SUM_MODE \
+		-o ../bin/dc_norm_s -lm -lpthread
+dc_best_m: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D ONLY_BESTS \
+		-o ../bin/dc_best_m -lm -lpthread
+dc_best_s: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D ONLY_BESTS \
+		-o ../bin/dc_best_s -lm -lpthread
+dc_haus_m: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D HAUSDORFF \
+		-o ../bin/dc_haus_m -lm -lpthread
+dc_haus_s: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D HAUSDORFF \
+		-o ../bin/dc_haus_s -lm -lpthread
+# dc_nonw_m: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 	-D LOCAL_SEARCH -D DONT_USE_WHITAKER \
+# 	-o ../bin/dc_nonw_m -lm -lpthread
 
-dsa: bin
-	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
-		-o ../bin/dsa -lm
-dsa_ls: bin
-	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -o ../bin/dsa_ls -lm
 randomhc: bin
-		cd src; gcc -std=c99 -O -Wall $(targets) mainhc.c \
-		-o ../bin/randomhc -lm
-dsa_hausdorff: bin
-	cd src; gcc -std=c99 -O -Wall $(targets) main.c \
-		-D HAUSDORFF -o ../bin/dsa_hausdorff -lm
-dsa_test: results test_problem
-	cd src; gcc -std=c99 -O -g -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D DEBUG -o ../bin/dsa -lm
-	valgrind --tool=memcheck --leak-check=yes ./bin/dsa 1000 100 10 \
-		tests/simple2_dsa results/simple2_dsa.txt
+		cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) mainhc.c \
+		-o ../bin/randomhc -lm -lpthread
 
-test_problem: tests
-	rm tests/* || true
-	# Create test problem:
-	python tools/problem_gen.py 20 100 1000 5000 tests/simple
-	# Create version with less facility cost:
-	sed -e 's/+5000 X/ +2500 X/g' tests/simple_lp > tests/simple2_lp
-	sed -e '1c\2500' tests/simple_dsa > tests/simple2_dsa
-	# Solve problems with lp_solve
-	lp_solve tests/simple_lp > tests/simple_lp_sol
-	lp_solve tests/simple2_lp > tests/simple2_lp_sol
-	# Plot problem:
-	python tools/svg_gen.py tests/simple_pos tests/simple_pos.svg
-	convert tests/simple_pos.svg tests/simple_pos.png
-	# Plot solution to problem 1:
-	python tools/svg_gen.py tests/simple_pos \
-		-p tests/simple_lp_sol tests/simple_lp_sol.svg
-	convert tests/simple_lp_sol.svg tests/simple_lp_sol.png
-	# Plot solution to problem 2:
-	python tools/svg_gen.py tests/simple_pos \
-		-p tests/simple2_lp_sol tests/simple2_lp_sol.svg
-	convert tests/simple2_lp_sol.svg tests/simple2_lp_sol.png
+# many_bin: bin tests
+# 	for i in 0 1 2 3 4 5 6 7 8 9 10; do \
+# 		cd src; gcc -std=c99 -g -D THREADS=$$i -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH -o ../bin/dsa_ls_$$i -lm -lpthread; \
+# 		cd ..; \
+# 	done
+
+# fname = problems/prob_n0050_i0001_p08_dsa_splp
+# solname = result/prob_n0050_i0001_p08_dsa_splp
+# timetest:
+# 	rm -rf result 2>/dev/null
+# 	mkdir -p result
+# 	valgrind --tool=callgrind --callgrind-out-file=callgrind.out.timetest ./bin/dsa_ls 100 200 1 $(fname) $(solname) $(solname)hc
+# 	callgrind_annotate --tree=caller callgrind.out.timetest > profiles/no_parallel.txt
+
+# Good testing one: "splp/Euclid/1311EuclS.txt"

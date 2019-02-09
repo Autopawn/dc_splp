@@ -42,3 +42,58 @@ void rem_of_sorted(short *array, int *len, short val){
     }
     *len -= 1;
 }
+
+void problem_create_facility_dist_matrix(problem *prob){
+    // sets the distance between facilities.
+    // mode 's':   d(a,b) = min_j d(a,j)+d(b,j)
+    // mode 'm':   d(a,b) = sum_j |d(a,j)-d(b,j)|
+    // it requires prob->distances setted.
+    for(int a=0;a<prob->n_facilities;a++){
+        for(int b=a;b<prob->n_facilities;b++){
+            #ifdef FDIST_SUM_MODE
+                lint dist = 0;
+                for(int j=0;j<prob->n_clients;j++){
+                    lint delta = prob->distances[a][j]-prob->distances[b][j];
+                    if(delta<0) delta = -delta;
+                    dist += delta;
+                }
+            #else
+                lint dist = MAX_LINT;
+                for(int j=0;j<prob->n_clients;j++){
+                    lint dist_sum = prob->distances[a][j]+prob->distances[b][j];
+                    if(dist_sum<dist) dist = dist_sum;
+                }
+            #endif
+            prob->fdistances[a][b] = dist;
+            prob->fdistances[b][a] = dist;
+        }
+    }
+}
+
+typedef struct{
+    lint dist;
+    int indx;
+} distduple;
+
+int distduple_comp(const void *a, const void *b){
+    const distduple *aa = (const distduple *) a;
+    const distduple *bb = (const distduple *) b;
+    return aa->dist-bb->dist;
+}
+
+void problem_create_facility_nearest_matrix(problem *prob){
+    // sets the matrix of nearest to farthest facilities for each one
+    // it requires prob->fdistances setted.
+    distduple *duples = safe_malloc(sizeof(distduple)*prob->n_facilities);
+    for(int i=0;i<prob->n_facilities;i++){
+        for(int j=0;j<prob->n_facilities;j++){
+            duples[j].indx = j;
+            duples[j].dist = prob->fdistances[i][j];
+        }
+        qsort(duples,prob->n_facilities,sizeof(distduple),distduple_comp);
+        for(int j=0;j<prob->n_facilities;j++){
+            prob->fnearest[i][j] = duples[j].indx; //NOTE
+        }
+    }
+    free(duples);
+}
