@@ -13,15 +13,14 @@ else
     export lp_solve="lp_solve"
 fi
 
-files=$(find $target | grep -v splpl_ | grep '\.lp')
-files="$files $(find $target | grep splpl_ | grep '\.lp')"
+files=$(find $target | grep -v splpl_ | grep '\.lp' | xargs -n1 | sort -u | xargs)
+files="$files $(find $target | grep splpl_ | grep '\.lp' | xargs -n1 | sort -u | xargs)"
+files=$(echo "$files" | awk '1+NR%'$2'=='$1'')
 
 for file in $files; do
     result="${file%.lp}.opt"
     if [[ ! -e "$result" ]]; then
-        touch "$result"
-        # NOTE: Race condition, the previous 2 should be atomic.
-        # There is a very very very small chance of race condition problems 
+        # touch "$result"
         tmpfile=$(mktemp /tmp/splp_custom_lpsolve.XXXXXXXX)
         # Solve:
         time_start=$(date +%s)
@@ -29,8 +28,8 @@ for file in $files; do
         time_end=$(date +%s)
         runtime=$((time_end-time_start))
         #
-        cat "$tmpfile" | grep 'Value' | cut -d':' -f2 > "$result"
-        cat "$tmpfile" | grep 'Y' | grep ' 1' | cut -f1 -d' ' | cut -d'c' -f2 >> "$result"
+        cat "$tmpfile" | grep 'Y' | grep ' 1' | cut -f1 -d' ' | cut -d'c' -f2 > "$result"
+        cat "$tmpfile" | grep 'Value' | cut -d':' -f2 >> "$result"
         nfacs=$(cat "$tmpfile" | grep 'X' | grep ' 1' | wc -l)
         cat "$result" > "$tmpfile"
         cat "$tmpfile" | tr '\n' ' ' > "$result"

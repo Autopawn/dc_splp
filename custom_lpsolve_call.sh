@@ -1,20 +1,21 @@
 #!/bin/bash
 
 target="custom"
-jobs=8
+jobs=6
 
 # Delete solutions without data
-files=$(find $target | grep '\.opt')
-for fi in $files; do
-    len=$(wc -c < "$fi")
-    if [ "$len" -eq "0" ]; then
-        rm "$fi"
+files=$(find $target | grep '\.opt') || true
+for fil in $files; do
+    len=$(wc -c < "$fil")
+    if [ "$len" -lt "3" ]; then
+        rm "$fil"
     fi
 done
 
 # Add jobs to solve lp problems
 for i in $(seq $jobs); do
-    qsub -N lpsolv_$i custom_lpsolve.sh || \
-        bash custom_lpsolve.sh
+    echo $i
+    qsub -N lpsolv_$i custom_lpsolve.sh -F "$i $jobs" || \
+        bash custom_lpsolve.sh $i $jobs
     sleep 1
 done

@@ -27,17 +27,27 @@ def get_dirs(dir,ext=None):
 
 def read_optimum(fname):
     fi = open(fname)
+    nfacs_rep = None
     time = None
+    k = None
     for lin in fi:
         lin = lin.strip()
+        lin = lin.replace("  "," ")
         if len(lin)==0: continue
         if "#" in lin:
-            if "#runtime" in lin:
-                time = int(lin.replace("#runtime",""))
+            if "#runtime:" in lin:
+                time = int(lin.replace("#runtime:",""))
+            if "#nfacs:" in lin:
+                nfacs_rep = int(lin.replace("#nfacs:",""))
         else:
             k = lin.split()
     fi.close()
+    assert(k)
     assigns = [int(x) for x in k[:-1]]
+    if not (nfacs_rep is None or len(set(assigns))<=nfacs_rep):
+        print(fname)
+        print(nfacs_rep)
+        assert(False)
     value = float(k[-1])
     return assigns,value,time
 
@@ -164,7 +174,7 @@ for kind in ('opt','bub'):
         max_opt_nfacs = np.max(opt_nfacs)
         opt_time_mean = float('inf') if len(opt_times)==0 else np.mean(opt_times)
         opt_time_std = float('inf') if len(opt_times)==0 else np.std(opt_times)
-        print("%-35s  (%d probs)  n:%d-%d  m:%d-%d  p:%d-%d  on:%d-%d  otime:%f+-%f"%(group_name,
+        print("%-35s  (%d probs)  n:%d-%d  m:%d-%d  p:%d-%d  on:%d-%d  otime: %.2f+-%.2f"%(group_name,
             len(group_prob_names),
             min_nfacs,max_nfacs,
             min_nclis,max_nclis,
@@ -195,7 +205,7 @@ for kind in ('opt','bub'):
                 if sol_data[0] is None:
                     nones += 1
                 else:
-                    opt = is_optimum(sol_data,opt_data)
+                    opt = is_optimum(sol_data,opt_data,kind=='bub')
                     if opt:
                         optis += 1
                     else:

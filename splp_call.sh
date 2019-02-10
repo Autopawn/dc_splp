@@ -15,7 +15,7 @@ fnames=$(find $target | grep -v 'kmedian' | \
     grep -v '\.opt' | grep -v '\.bub' | grep -v 'README' | \
     grep -v '\.c' | grep -v '\.lst' | grep -v '~' | \
     grep -v 'capinfo\.txt' | grep -v 'capmst1\.txt' | grep -v 'capmst2\.txt' | \
-    grep -v 'ORLIB-uncap/a-c' )
+    grep -v '.lp' | grep -v 'ORLIB-uncap/a-c' )
 fnames="$fnames $target"
 
 parameters="\
