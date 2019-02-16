@@ -15,7 +15,8 @@ fi
 
 files=$(find $target | grep -v splpl_ | grep '\.lp' | xargs -n1 | sort -u | xargs)
 files="$files $(find $target | grep splpl_ | grep '\.lp' | xargs -n1 | sort -u | xargs)"
-files=$(echo "$files" | awk '1+NR%'$2'=='$1'')
+ba=$1
+files=$(echo "$files" | tr ' ' '\n' | awk 'NR%'$2'=='$((ba-1)) )
 
 for file in $files; do
     result="${file%.lp}.opt"
