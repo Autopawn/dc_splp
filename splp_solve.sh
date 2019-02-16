@@ -1,7 +1,7 @@
 #!/bin/bash -e
 #PBS -l cput=8000:00:01
 #PBS -l walltime=8000:00:01
-#PBS -l mem=10gb
+#PBS -l mem=20gb
 
 if [ "$#" -ne 4 ]; then
     echo "4 arguments are required!"
