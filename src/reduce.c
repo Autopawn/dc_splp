@@ -99,7 +99,7 @@ void *reduce_thread_execution(void *arg){
     free(pairs);
 
     // Wake when is required to compute new dissimilitudes
-    dissimpair *pair_buffer = malloc(sizeof(dissimpair)*(args->vision_range/THREADS+1));
+    dissimpair *pair_buffer = safe_malloc(sizeof(dissimpair)*(args->vision_range/THREADS+1));
     int pair_buffer_len = 0;
     while(1){
         sem_post(args->complete_sem);

@@ -228,7 +228,7 @@ void solution_copy(const problem *prob, solution *dest, const solution *source){
 solution solution_hill_climbing(const problem *prob, solution sol){
     lint old_value = sol.value;
     if(sol.n_facilities==0) return sol;
-    solution best;
+    solution best = sol;
     #ifndef DONT_USE_WHITAKER
         if(sol.n_facilities>=2){
             best = solution_whitaker_hill_climbing(prob,sol);
@@ -236,8 +236,6 @@ solution solution_hill_climbing(const problem *prob, solution sol){
     #else
         {
         // This is the old hill climbing, I will only use it for solutions of size 1, which should be trivial.
-        best = sol;
-        //
         int improvement = 1;
         while(improvement){
             improvement = 0;

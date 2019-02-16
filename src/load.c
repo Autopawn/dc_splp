@@ -2,7 +2,7 @@
 
 problem *load_simple_format(FILE *fp){
     // Alloc memory for problem.
-    problem *prob = malloc(sizeof(problem));
+    problem *prob = safe_malloc(sizeof(problem));
 
     // Read filename in header:
     char buffer[400];
@@ -81,7 +81,7 @@ problem *load_simple_format(FILE *fp){
 
 problem *load_orlib_format(FILE *fp){
     // Alloc memory for problem.
-    problem *prob = malloc(sizeof(problem));
+    problem *prob = safe_malloc(sizeof(problem));
 
     // Read the number of facilities:
     if(fscanf(fp,"%d",&prob->n_facilities)!=1){
@@ -104,10 +104,18 @@ problem *load_orlib_format(FILE *fp){
     for(int i=0;i<prob->n_facilities;i++){
 
         // Read facility capacity
-        double capacity;
+        double capacity=0;
+        char cap_text[200];
         if(fscanf(fp,"%lf",&capacity)!=1){
-            fprintf(stderr,"ERROR: facility capacity expected!\n");
-            exit(1);
+            if(fscanf(fp,"%s",cap_text)!=1){
+                fprintf(stderr,"ERROR: facility capacity expected!\n");
+                exit(1);
+            }else{
+                if(strcmp(cap_text,"capacity")!=0){
+                    fprintf(stderr,"ERROR: facility capacity isn't valid!\n");
+                    exit(1);
+                }
+            }
         }
         if(capacity!=0 && !cap_0_warn){
             fprintf(stderr,"WARNING: facility capacity is %lf (not 0)!\n",capacity);

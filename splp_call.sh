@@ -15,16 +15,17 @@ fnames=$(find $target | grep -v 'kmedian' | \
     grep -v '\.opt' | grep -v '\.bub' | grep -v 'README' | \
     grep -v '\.c' | grep -v '\.lst' | grep -v '~' | \
     grep -v 'capinfo\.txt' | grep -v 'capmst1\.txt' | grep -v 'capmst2\.txt' | \
-    grep -v '.lp' | grep -v 'ORLIB-uncap/a-c' )
+    grep -v '\.lp' )
 fnames="$fnames $target"
 
 parameters="\
     dc_norm_m_200_400 dc_norm_s_200_400 \
     dc_haus_m_200_400 dc_haus_s_200_400 \
     dc_norm_m_200_-1 dc_norm_s_200_-1 \
-    dc_best_m_200_400 dc_best_s_200_400 "
+    dc_best_m_200_400 dc_best_s_200_400 \
+    dc_norm_s_300_600 dc_norm_s_400_800"
 
-# Delelte problem_list files
+# Delete problem_list files
 mkdir -p "$resfolder"
 for probfile in $(find "$resfolder" | grep problem_list); do
     rm $probfile
