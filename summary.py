@@ -2,6 +2,8 @@ import os
 import sys
 import numpy as np
 
+DEEPNESS=1
+
 # -- parse input --
 if len(sys.argv)!=3:
     print("usage: python %s <prob_dir> <sols_dir>"%(sys.argv[0]))
@@ -126,12 +128,18 @@ for kind in ('opt','bub'):
     print("="*80)
     prob_names = sorted(list(problems[kind]))
     # Identify the problem groups (last folders):
-    group_names = sorted(list(set([tuple(x[:-1]) for x in prob_names])))
+
+    get_group = lambda x: tuple(x[:-1] if len(x)<=DEEPNESS else x[:DEEPNESS])
+    group_names = sorted(list(set([get_group(x) for x in prob_names])))
+
+    # --- Table
+    table = ["\\textbf{Benchmark} & \\textbf{Optima} & \\textbf{Opt. after LS} & \\textbf{Non opt. rel. cost} & \\textbf{CPU time} \\[s\\] & \\textbf{Iters.}"]
+    # ---
 
     for group in group_names:
 
         # Find the specific problems for this group:
-        group_prob_names = [x for x in prob_names if tuple(x[:-1])==group]
+        group_prob_names = [x for x in prob_names if get_group(x)==group]
 
         strbases = {}
         nfacs = []
@@ -139,6 +147,7 @@ for kind in ('opt','bub'):
         opt_nfacs = []
         ps = []
         opt_times = []
+
 
         for prob in group_prob_names:
             joined = os.path.join(*prob)
@@ -166,20 +175,25 @@ for kind in ('opt','bub'):
         print("-"*20)
         min_p = np.min(ps)
         max_p = np.max(ps)
+        str_p = str(min_p) if min_p==max_p else "%d-%d"%(min_p,max_p)
         min_nfacs = np.min(nfacs)
         max_nfacs = np.max(nfacs)
+        str_nfacs = str(min_nfacs) if min_nfacs==max_nfacs else "%d-%d"%(min_nfacs,max_nfacs)
         min_nclis = np.min(nclis)
         max_nclis = np.max(nclis)
+        str_nclis = str(min_nclis) if min_nclis==max_nclis else "%d-%d"%(min_nclis,max_nclis)
         min_opt_nfacs = np.min(opt_nfacs)
         max_opt_nfacs = np.max(opt_nfacs)
+        str_opt_nfacs = str(min_opt_nfacs) if min_opt_nfacs==max_opt_nfacs else "%d-%d"%(min_opt_nfacs,max_opt_nfacs)
         opt_time_mean = float('inf') if len(opt_times)==0 else np.mean(opt_times)
         opt_time_std = float('inf') if len(opt_times)==0 else np.std(opt_times)
-        print("%-35s  (%d probs)  n:%d-%d  m:%d-%d  p:%d-%d  on:%d-%d  otime: %.2f+-%.2f"%(group_name,
+
+        print("%-35s  (%d probs)  n:%s  m:%s  p:%s  on:%s  otime: %.2f+-%.2f"%(group_name,
             len(group_prob_names),
-            min_nfacs,max_nfacs,
-            min_nclis,max_nclis,
-            min_p,max_p,
-            min_opt_nfacs,max_opt_nfacs,
+            str_nfacs,
+            str_nclis,
+            str_p,
+            str_opt_nfacs,
             opt_time_mean,opt_time_std))
 
         for mode in ('','_ls'):
@@ -227,7 +241,8 @@ for kind in ('opt','bub'):
                 red = '\033[0;31m'
                 noc = '\033[0m'
             perce = "    -    " if len(perces)==0 else "%9.6f"%(np.mean(perces))
-            time = "%8.3f+-%-8.3f"%(np.mean(times),np.std(times))
+            time = "    -    " if len(times)==0 else "%8.3f+-%-8.3f"%(np.mean(times),np.std(times))
+            time2 = "    -    " if len(times)==0 else "%8.3f-%-8.3f"%(np.min(times),np.max(times))
             iter = "   -   "if len(iters)==0 else "%3d-%-3d"%(np.min(iters),np.max(iters))
             final = "   -   "if len(finals)==0 else "%3d-%-3d"%(np.min(finals),np.max(finals))
             print("%-35s  opt:%3d/%-3d  %snons:%3d/%-3d%s  perce:%s  t:%s  it:%s  fs:%s"%(
@@ -237,3 +252,15 @@ for kind in ('opt','bub'):
                 perce,time,iter,final))
             for stri in strings:
                 print(stri)
+            # --- Table
+            n_probs = len(group_prob_names)
+            if nones<n_probs:
+                if mode=='':
+                    table.append("\\\\ \\newline %s & $%d/%d$ &"%(group_name,optis,n_probs))
+                else:
+                    table[-1] += " $%d/%d$ & %s & %s & %s "%(optis,n_probs,perce,time2,iter)
+            # ---
+    table = "\n".join(table)
+    print("="*20)
+    print(table)
+    print("="*20)
