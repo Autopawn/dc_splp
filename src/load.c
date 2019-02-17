@@ -106,15 +106,14 @@ problem *load_orlib_format(FILE *fp){
         // Read facility capacity
         double capacity=0;
         char cap_text[200];
-        if(fscanf(fp,"%lf",&capacity)!=1){
-            if(fscanf(fp,"%s",cap_text)!=1){
-                fprintf(stderr,"ERROR: facility capacity expected!\n");
+        if(fscanf(fp,"%s",cap_text)!=1){
+            fprintf(stderr,"ERROR: facility capacity expected!\n");
+            exit(1);
+        }
+        if(strcmp(cap_text,"capacity")!=0){
+            if(sscanf(cap_text,"%lf",&capacity)!=1){
+                fprintf(stderr,"ERROR: facility capacity isn't valid!\n");
                 exit(1);
-            }else{
-                if(strcmp(cap_text,"capacity")!=0){
-                    fprintf(stderr,"ERROR: facility capacity isn't valid!\n");
-                    exit(1);
-                }
             }
         }
         if(capacity!=0 && !cap_0_warn){

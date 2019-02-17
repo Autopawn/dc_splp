@@ -1,7 +1,7 @@
 #!/bin/bash
 
 target="custom"
-jobs=6
+jobs=12
 
 # Delete solutions without data
 files=$(find $target | grep '\.opt') || true
