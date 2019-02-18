@@ -35,10 +35,11 @@ for pp in $pvalues; do
     done
 done
 
-for nn in $nvalues2; do
-    subtarg="$target"/splpl_"$nn"
-    mkdir -p "$subtarg"
-    for kk in $(seq $nprobs); do
-        python tools/problem_generator.py "$nn" l "$subtarg"/"$kk" "$subtarg"/"$kk".lp
-    done
-done
+# won't be generated.
+# for nn in $nvalues2; do
+#     subtarg="$target"/splpl_"$nn"
+#     mkdir -p "$subtarg"
+#     for kk in $(seq $nprobs); do
+#         python tools/problem_generator.py "$nn" l "$subtarg"/"$kk" "$subtarg"/"$kk".lp
+#     done
+# done

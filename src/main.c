@@ -35,24 +35,26 @@ int main(int argc, char **argv){
         #else
             printf("Usage: %s <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_file>\n",argv[0]);
         #endif
-        printf("A vision_range of -1 will activate random choice reduction.\n");
+        #ifdef REDUCTION_BESTS
+            printf("A vision_range of 0 should be used on this mode.\n");
+            assert(vision_range==0);
+        #endif
+        #ifdef REDUCTION_RANDOM
+            printf("A vision_range of 0 should be used on this mode.\n");
+            assert(vision_range==0);
+        #endif
         printf("A pool_size of 1 will activate greedy mode.\n");
         exit(1);
     }
     printf("Pool size: %d\n",pool_size);
-    if(vision_range!=-1){
-        if(pool_size==1){
-            vision_range=1;
-            printf("Vision range: %d\n",vision_range);
-            printf("\t(Greedy)\n");
-        }else{
-            printf("Vision range: %d\n",vision_range);
-        }
+    assert(vision_range>=0);
+    if(pool_size==1){
+        vision_range=1;
+        printf("Vision range: %d\n",vision_range);
+        printf("\t(Greedy)\n");
     }else{
         printf("Vision range: %d\n",vision_range);
-        printf("\t(Random selection)\n");
     }
-    assert(vision_range>=-1);
     printf("Max solutions to show: %d\n",max_to_show);
 
     // ---@> Start counting time

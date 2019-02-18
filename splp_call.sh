@@ -19,11 +19,10 @@ fnames=$(find $target | grep -v 'kmedian' | \
 fnames="$fnames $target"
 
 parameters="\
-    dc_norm_m_200_400 dc_norm_s_200_400 \
-    dc_haus_m_200_400 dc_haus_s_200_400 \
-    dc_norm_m_200_-1 dc_norm_s_200_-1 \
-    dc_best_m_200_400 dc_best_s_200_400 \
-    dc_norm_s_300_600 dc_norm_s_400_800"
+    dc_normmin_200_400 dc_normsum_200_400 \
+    dc_hausmin_200_400 dc_haussum_200_400 \
+    dc_normmin_400_600 dc_normsum_400_600 \
+    dc_rand_200_0 dc_best_200_0 dc_rand_400_0 dc_best_400_0"
 
 # Delete problem_list files
 mkdir -p "$resfolder"
@@ -41,9 +40,8 @@ for params in $parameters; do
             if [ -n "$problems" ]; then
                 gname="$(echo $group | tr / _ | cut -d'_' -f2-)"
                 n2=$(echo $params | cut -d'_' -f2)
-                n3=$(echo $params | cut -d'_' -f3)
-                ng=$(echo $params | cut -d'_' -f4-5)
-                name=dc_"${n2:0:1}${n3:0:1}"_"$ng"_"$gname"
+                ng=$(echo $params | cut -d'_' -f3-4)
+                name="$n2"_"$ng"_"$gname"
                 echo "calling $name"
                 qsub -N $name splp_solve.sh \
                     -F "$params \"$group\" \"$problems\" \"$resfolder\"" || \

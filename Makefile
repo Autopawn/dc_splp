@@ -2,7 +2,7 @@ targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
 THREADS = 16
 
-all: dc_norm_m dc_norm_s dc_best_m dc_best_s dc_haus_m dc_haus_s randomhc
+all: dc_normmin dc_normsum dc_hausmin dc_haussum dc_best dc_rand dc_singlesum randomhc
 
 bin:
 	mkdir -p bin
@@ -11,29 +11,57 @@ tests:
 # dsa: bin
 # 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 # 		-o ../bin/dsa -lm -lpthread
-dc_norm_m: bin
+dc_normmin: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 		-D LOCAL_SEARCH \
-		-o ../bin/dc_norm_m -lm -lpthread
+		-o ../bin/dc_normmin -lm -lpthread
+dc_normsum: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D FDIS_SUM_MODE \
+		-o ../bin/dc_normsum -lm -lpthread
+dc_hausmin: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF \
+		-o ../bin/dc_hausmin -lm -lpthread
+dc_haussum: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF -D FDIS_SUM_MODE \
+		-o ../bin/dc_haussum -lm -lpthread
+dc_best:
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D REDUCTION_BESTS \
+		-o ../bin/dc_best -lm -lpthread
+dc_rand:
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D REDUCTION_RANDOM \
+		-o ../bin/dc_rand -lm -lpthread
+dc_singlesum: bin
+	cd src; gcc -std=c99 -g -D THREADS=0 -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D FDIS_SUM_MODE \
+		-o ../bin/dc_singlesum -lm -lpthread
+
+
+dc_norm_m: bin
+
 dc_norm_s: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 		-D LOCAL_SEARCH -D FDIST_SUM_MODE \
 		-o ../bin/dc_norm_s -lm -lpthread
 dc_best_m: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D ONLY_BESTS \
+		-D LOCAL_SEARCH -D REDUCTION_BESTS \
 		-o ../bin/dc_best_m -lm -lpthread
 dc_best_s: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D ONLY_BESTS \
+		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D  \
 		-o ../bin/dc_best_s -lm -lpthread
 dc_haus_m: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D HAUSDORFF \
+		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF \
 		-o ../bin/dc_haus_m -lm -lpthread
 dc_haus_s: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D HAUSDORFF \
+		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D REDUCTION_HAUSDORFF \
 		-o ../bin/dc_haus_s -lm -lpthread
 # dc_nonw_m: bin
 # 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \

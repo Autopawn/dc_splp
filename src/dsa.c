@@ -102,7 +102,7 @@ void *hillclimb_thread_execution(void *arg){
     hillclimb_thread_args *args = (hillclimb_thread_args *) arg;
     for(int i=args->thread_id;i<args->n_sols;i+=THREADS){
         solution enhanced = solution_hill_climbing(args->prob,*args->sols[i]);
-        *args->sols[i] = enhanced;
+        solution_copy(args->prob,args->sols[i],&enhanced);
     }
     return NULL;
 }

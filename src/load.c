@@ -225,7 +225,7 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     fprintf(fp,"# Iterations: %d\n",n_iterations);
     fprintf(fp,"# Final_solutions: %d\n",tot_n_sols);
     fprintf(fp,"# Vision_range: %d\n",vision_range);
-    #ifdef HAUSDORFF
+    #ifdef REDUCTION_HAUSDORFF
     fprintf(fp,"# Dissimilitude: HAUSDORFF\n");
     #else
     fprintf(fp,"# Dissimilitude: MEAN_GEOMETRIC_ERROR\n");
@@ -235,10 +235,13 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     #else
     fprintf(fp,"# Facility_dist: MINIMUM\n");
     #endif
-    #ifdef ONLY_BESTS
-    fprintf(fp,"# Reduction_mode: ONLY_BESTS\n");
+    #ifdef REDUCTION_BESTS
+    fprintf(fp,"# Reduction_mode: REDUCTION_BESTS\n");
     #else
-    fprintf(fp,"# Reduction_mode: DISPERSE\n");
+    #ifdef REDUCTION_RANDOM
+    #else
+    fprintf(fp,"# Reduction_mode: RANDOM\n");
+    #endif
     #endif
     // Print the solutions:
     if(n_sols==0){
@@ -259,17 +262,17 @@ void print_solution(FILE *f, const solution *sol, double multiplier){
     fprintf(f,"  Value: %lf\n",value);
     fprintf(f,"  Assigns: ");
     for(int i=0;i<MAX_CLIENTS;i++){
-        if(sol->assignments[i]!=-1){
-            fprintf(f,"%d ",sol->assignments[i]);
-        }
+        if(sol->assignments[i]==-1) break;
+        fprintf(f,"%d ",sol->assignments[i]);
     }
     fprintf(f,"\n");
     fprintf(f,"  Facilities: %d\n",sol->n_facilities);
     for(int i=0;i<sol->n_facilities;i++){
         fprintf(f,"  %4d :",sol->facilities[i]);
         for(int j=0;j<MAX_CLIENTS;j++){
+            if(sol->assignments[j]==-1) break;
             if(sol->assignments[j]==sol->facilities[i]){
-                fprintf(f,"%4d",j);
+                fprintf(f,"%5d",j);
             }
         }
         fprintf(f,"\n");

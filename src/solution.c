@@ -130,7 +130,7 @@ void solution_remove(const problem *prob, solution *sol, short remf){
     sol->value = nvalue;
 }
 
-#ifdef HAUSDORFF
+#ifdef REDUCTION_HAUSDORFF
 
 // Returns the dissimilitude (using Hausdorff):
 lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
@@ -221,12 +221,17 @@ void solution_copy(const problem *prob, solution *dest, const solution *source){
     for(int j=0;j<prob->n_clients;j++){
         dest->assignments[j] = source->assignments[j];
     }
+    if(prob->n_clients<MAX_CLIENTS){
+        assert(source->assignments[prob->n_clients]==-1);
+        dest->assignments[prob->n_clients] = -1;
+    }
     dest->value = source->value;
 }
 
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){
     lint old_value = sol.value;
+    int old_n_facilities = sol.n_facilities;
     if(sol.n_facilities==0) return sol;
     solution best = sol;
     #ifndef DONT_USE_WHITAKER
@@ -260,6 +265,7 @@ solution solution_hill_climbing(const problem *prob, solution sol){
         }
     #endif
     assert(best.value>=old_value);
+    assert(best.n_facilities==old_n_facilities);
     return best;
 }
 

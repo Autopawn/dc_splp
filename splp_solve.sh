@@ -12,9 +12,9 @@ if [ -n "${PBS_O_WORKDIR+1}" ]; then
     cd "$PBS_O_WORKDIR"
 fi
 
-exec="$(echo $1 | cut -d'_' -f1-3 -)"
-pz="$(echo $1 | cut -d'_' -f4 -)"
-vr="$(echo $1 | cut -d'_' -f5 -)"
+exec="$(echo $1 | cut -d'_' -f1-2 -)"
+pz="$(echo $1 | cut -d'_' -f3 -)"
+vr="$(echo $1 | cut -d'_' -f4 -)"
 if [ "$vr" -eq "0" ]; then
    vr=99999999
 fi

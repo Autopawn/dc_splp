@@ -32,6 +32,8 @@ int solution_value_cmp_inv(const void *a, const void *b);
 
 int solution_cmp(const void *a, const void *b);
 
+void solution_copy(const problem *prob, solution *dest, const solution *source);
+
 solution random_solution(const problem *prob, int size);
 
 #endif

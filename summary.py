@@ -107,14 +107,17 @@ def is_optimum(sol,opt,can_be_better):
     sol_val = sol[1]
     if sol_assi is None:
         assert(sol_val is None)
-        return False
+        return 0
     sol_facts = set(sol_assi)
     opt_facts = set(opt_assi)
-    if sol_facts == opt_facts: return True
+    if sol_facts == opt_facts: return 1
     if sol_val <= opt_val:
-        assert(can_be_better or sol_val<=opt_val+0.01)
-        return True
-    return False
+        if sol_val<=opt_val-0.01:
+            assert(can_be_better)
+            return 2
+        else:
+            return 1
+    return 0
 
 problems = {}
 problems['opt'] = get_dirs(prob_dir,".opt")
@@ -133,7 +136,7 @@ for kind in ('opt','bub'):
     group_names = sorted(list(set([get_group(x) for x in prob_names])))
 
     # --- Table
-    table = ["\\textbf{Benchmark} & \\textbf{Optima} & \\textbf{Opt. after LS} & \\textbf{Non opt. rel. cost} & \\textbf{CPU time} \\[s\\] & \\textbf{Iters.}"]
+    table = []
     # ---
 
     for group in group_names:
@@ -203,6 +206,7 @@ for kind in ('opt','bub'):
             iters = []
             finals = []
             optis = 0
+            betters = 0
             nones = 0
             for prob in group_prob_names:
                 joined = os.path.join(*prob)
@@ -220,8 +224,10 @@ for kind in ('opt','bub'):
                     nones += 1
                 else:
                     opt = is_optimum(sol_data,opt_data,kind=='bub')
-                    if opt:
+                    if opt==1:
                         optis += 1
+                    elif opt==2:
+                        betters += 1
                     else:
                         show = True
                     perce = 0 if opt_data[1] is None else sol_data[1]/opt_data[1]
@@ -232,6 +238,7 @@ for kind in ('opt','bub'):
                     if mode=='_ls':
                         strings.append(strbases[prob_fname]+"  v:%9.3f %8.4f"%(
                             sol_data[1],perce))
+                if (show or kind=='bub') and perce!=0:
                     perces.append(perce)
             # Print solutions description
             if nones==0:
@@ -256,11 +263,21 @@ for kind in ('opt','bub'):
             n_probs = len(group_prob_names)
             if nones<n_probs:
                 if mode=='':
-                    table.append("\\\\ \\newline %s & $%d/%d$ &"%(group_name,optis,n_probs))
+                    preoptis = optis
                 else:
-                    table[-1] += " $%d/%d$ & %s & %s & %s "%(optis,n_probs,perce,time2,iter)
+                    fst = "\\hline" if len(table)==0 else ""
+                    if kind=='opt':
+                        table.append("\\\\ %s %s & $%d/%d$ & $%d/%d$ & %s & %s & %s "%(fst,group_name,optis,n_probs,preoptis,n_probs,perce,time2,iter))
+                    else:
+                        table.append("\\\\ %s %s & $%d/%d$ & $%d/%d$ & %s & %s & %s "%(fst,group_name,betters,n_probs,optis,n_probs,perce,time2,iter))
             # ---
     table = "\n".join(table)
     print("="*20)
+    if kind=='opt':
+        print("\\hline \\textbf{Benchmark} & \\textbf{Optima} & \\textbf{Opt. pre-LS} & \\textbf{Non opt. cost} & \\textbf{CPU time} [s] & \\textbf{Iters.}")
+    else:
+        print("\\hline \\textbf{Benchmark} & \\textbf{Better} & \\textbf{Same} & \\textbf{Mean rel. cost} & \\textbf{CPU time} [s] & \\textbf{Iters.}")
+
     print(table)
+    print("\\\\ \\hline")
     print("="*20)

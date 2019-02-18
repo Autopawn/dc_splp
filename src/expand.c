@@ -48,7 +48,7 @@ void *expand_thread_execution(void *arg){
     for(int r=args->thread_id;r<args->n_futuresols;r+=THREADS){
         futuresol *fsol = (futuresol *)(args->futuresols+args->fsol_size*r);
         solution *new_sol = safe_malloc(sizeof(solution));
-        *new_sol = *fsol->origin;
+        solution_copy(args->prob,new_sol,fsol->origin);
         solution_add(args->prob,new_sol,fsol->newf);
         lint delta = new_sol->value - fsol->origin->value;
         // // When size_restriction is active, the solution is never filtered
@@ -165,11 +165,13 @@ solution **new_expand_solutions(const problem *prob,
         for(int r=0;r<n_futuresols;r++){
             futuresol *fsol = (futuresol *)(futuresols+fsol_size*r);
             solution *new_sol = safe_malloc(sizeof(solution));
-            *new_sol = *fsol->origin;
+            solution_copy(prob,new_sol,fsol->origin);
             solution_add(prob,new_sol,fsol->newf);
             lint delta = new_sol->value - fsol->origin->value;
             // When size_restriction is active, the solution is never filtered
-            if(delta<=0 && prob->size_restriction==-1){
+            // if(delta<=0 && prob->size_restriction==-1){
+            // NOTE: Now it is always filtered.
+            if(delta<=0){
                 free(new_sol);
                 continue;
             }
