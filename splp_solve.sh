@@ -26,7 +26,7 @@ echo '$1' "$1" >> "$resfolder/$1/$group/problem_list"
 echo "$files" | tr " " "\n" >> "$resfolder/$1/$group/problem_list"
 for prob in $files; do
     if [ ! -f "$resfolder/$1/""$prob""_ls" ]; then
-        # echo ./bin/"$exec" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
-        echo "./bin/\"$exec\" \"$pz\" \"$vr\" 10 \"$prob\" \"$resfolder/$1/$prob\" \"$resfolder/$1/\"\"$prob\"\"_ls\""
+        ./bin/"$exec" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
+        # echo "./bin/\"$exec\" \"$pz\" \"$vr\" 10 \"$prob\" \"$resfolder/$1/$prob\" \"$resfolder/$1/\"\"$prob\"\"_ls\""
     fi
 done
