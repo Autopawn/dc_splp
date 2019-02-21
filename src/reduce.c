@@ -58,7 +58,7 @@ void heap_add(dissimpair *heap, int *size, dissimpair val){
 // MULTITHREAD DISSIMILITUDE COMPUTATION
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-#if THREADS>0
+#if defined(REDUCTION_DISPERSE) && THREADS>0
 
 typedef struct {
     // Thread id:
@@ -180,7 +180,8 @@ void reduce_solutions(const problem *prob,
     if(*n_sols>target_n) *n_sols = target_n;
 }
 
-#else
+#endif
+
 #ifdef REDUCTION_RANDOM
 
 void reduce_solutions(const problem *prob,
@@ -203,7 +204,9 @@ void reduce_solutions(const problem *prob,
     if(*n_sols>target_n) *n_sols = target_n;
 }
 
-#else
+#endif
+
+#ifdef REDUCTION_DISPERSE
 
 void reduce_solutions(const problem *prob,
         solution **sols, int *n_sols, int target_n, int vision_range){
@@ -407,5 +410,4 @@ void reduce_solutions(const problem *prob,
 
 }
 
-#endif
 #endif

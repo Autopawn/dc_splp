@@ -130,7 +130,25 @@ void solution_remove(const problem *prob, solution *sol, short remf){
     sol->value = nvalue;
 }
 
-#ifdef REDUCTION_HAUSDORFF
+
+#ifdef DISSIM_CLIENTDELTA
+
+// Returns the dissimilitude (using client delta).
+lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
+    lint total = 0;
+    for(int i=0;i<prob->n_clients;i++){
+        lint cost_a = prob->distances[sol_a->assignments[i]][i];
+        lint cost_b = prob->distances[sol_b->assignments[i]][i];
+        lint delta = cost_a-cost_b;
+        if(delta<0) delta = -delta;
+        total += delta;
+    }
+    return total;
+}
+
+#endif
+
+#ifdef DISSIM_HAUSDORFF
 
 // Returns the dissimilitude (using Hausdorff):
 lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
@@ -155,7 +173,9 @@ lint solution_dissimilitude(const problem *prob, const solution *sol_a, const so
     return disim;
 }
 
-#else
+#endif
+
+#ifdef DISSIM_MSE
 
 // Returns the dissimilitude (using mean geometric error).
 lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
@@ -234,7 +254,7 @@ solution solution_hill_climbing(const problem *prob, solution sol){
     int old_n_facilities = sol.n_facilities;
     if(sol.n_facilities==0) return sol;
     solution best = sol;
-    #ifndef DONT_USE_WHITAKER
+    #ifndef LOCALSEARCH_DONT_USE_WHITAKER
         if(sol.n_facilities>=2){
             best = solution_whitaker_hill_climbing(prob,sol);
         }else

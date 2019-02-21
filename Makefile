@@ -2,75 +2,103 @@ targets = common.c dsa.c expand.c load.c solution.c reduce.c
 
 THREADS = 16
 
-all: dc_normmin dc_normsum dc_hausmin dc_haussum dc_best dc_rand dc_singlesum randomhc
+all: dc_dismsemin dc_dismsesum dc_dishaumin dc_dishausum dc_discli dc_bes dc_ran randomhc dc_disclione dc_disclinwi
 
 bin:
 	mkdir -p bin
 tests:
 	mkdir -p tests
-# dsa: bin
-# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-# 		-o ../bin/dsa -lm -lpthread
-dc_normmin: bin
+dc_dismsemin: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
 		-D LOCAL_SEARCH \
-		-o ../bin/dc_normmin -lm -lpthread
-dc_normsum: bin
+		-D REDUCTION_DISPERSE -D DISSIM_MSE -D FDISMODE_MINDIST \
+		-o ../bin/dc_dismsemin -lm -lpthread
+dc_dismsesum: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIS_SUM_MODE \
-		-o ../bin/dc_normsum -lm -lpthread
-dc_hausmin: bin
+		-D LOCAL_SEARCH \
+		-D REDUCTION_DISPERSE -D DISSIM_MSE -D FDISMODE_SUMOFDELTAS \
+		-o ../bin/dc_dismsesum -lm -lpthread
+dc_dishaumin: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF \
-		-o ../bin/dc_hausmin -lm -lpthread
-dc_haussum: bin
+		-D LOCAL_SEARCH \
+		-D REDUCTION_DISPERSE -D DISSIM_HAUSDORFF -D FDISMODE_MINDIST \
+		-o ../bin/dc_dishaumin -lm -lpthread
+dc_dishausum: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF -D FDIS_SUM_MODE \
-		-o ../bin/dc_haussum -lm -lpthread
-dc_best:
+		-D LOCAL_SEARCH \
+		-D REDUCTION_DISPERSE -D DISSIM_HAUSDORFF -D FDISMODE_SUMOFDELTAS \
+		-o ../bin/dc_dishausum -lm -lpthread
+dc_discli: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D REDUCTION_BESTS \
-		-o ../bin/dc_best -lm -lpthread
-dc_rand:
-	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D REDUCTION_RANDOM \
-		-o ../bin/dc_rand -lm -lpthread
-dc_singlesum: bin
+		-D LOCAL_SEARCH \
+		-D REDUCTION_DISPERSE -D DISSIM_CLIENTDELTA \
+		-o ../bin/dc_discli -lm -lpthread
+dc_disclione: bin
 	cd src; gcc -std=c99 -g -D THREADS=0 -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIS_SUM_MODE \
-		-o ../bin/dc_singlesum -lm -lpthread
-
-
-dc_norm_m: bin
-
-dc_norm_s: bin
+		-D LOCAL_SEARCH \
+		-D REDUCTION_DISPERSE -D DISSIM_CLIENTDELTA \
+		-o ../bin/dc_disclione -lm -lpthread
+dc_bes: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIST_SUM_MODE \
-		-o ../bin/dc_norm_s -lm -lpthread
-dc_best_m: bin
+		-D LOCAL_SEARCH \
+		-D REDUCTION_BESTS \
+		-o ../bin/dc_bes -lm -lpthread
+dc_ran: bin
 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D REDUCTION_BESTS \
-		-o ../bin/dc_best_m -lm -lpthread
-dc_best_s: bin
-	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D  \
-		-o ../bin/dc_best_s -lm -lpthread
-dc_haus_m: bin
-	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF \
-		-o ../bin/dc_haus_m -lm -lpthread
-dc_haus_s: bin
-	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D REDUCTION_HAUSDORFF \
-		-o ../bin/dc_haus_s -lm -lpthread
-# dc_nonw_m: bin
-# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
-# 	-D LOCAL_SEARCH -D DONT_USE_WHITAKER \
-# 	-o ../bin/dc_nonw_m -lm -lpthread
-
+		-D LOCAL_SEARCH \
+		-D REDUCTION_RANDOM \
+		-o ../bin/dc_ran -lm -lpthread
 randomhc: bin
 		cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) mainhc.c \
+		-D RANDOMHC \
+		-D REDUCTION_BESTS \
 		-o ../bin/randomhc -lm -lpthread
+dc_disclione: bin
+	cd src; gcc -std=c99 -g -D THREADS=0 -Wall $(targets) main.c \
+		-D LOCAL_SEARCH \
+		-D REDUCTION_DISPERSE -D DISSIM_CLIENTDELTA \
+		-o ../bin/dc_disclione -lm -lpthread
+dc_disclinwi: bin
+	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+		-D LOCAL_SEARCH -D LOCALSEARCH_DONT_USE_WHITAKER \
+		-D REDUCTION_DISPERSE -D DISSIM_CLIENTDELTA \
+		-o ../bin/dc_disclinwi -lm -lpthread
+
+# dsa: bin
+# cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# -o ../bin/dsa -lm -lpthread
+
+# dc_singlesum: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=0 -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH \
+# 		-D FDIS_SUM_MODE \
+# 		-o ../bin/dc_singlesum -lm -lpthread
+
+# dc_norm_s: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH -D FDIST_SUM_MODE \
+# 		-o ../bin/dc_norm_s -lm -lpthread
+# dc_best_m: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH -D REDUCTION_BESTS \
+# 		-o ../bin/dc_best_m -lm -lpthread
+# dc_best_s: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D  \
+# 		-o ../bin/dc_best_s -lm -lpthread
+# dc_haus_m: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH -D REDUCTION_HAUSDORFF \
+# 		-o ../bin/dc_haus_m -lm -lpthread
+# dc_haus_s: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 		-D LOCAL_SEARCH -D FDIST_SUM_MODE -D REDUCTION_HAUSDORFF \
+# 		-o ../bin/dc_haus_s -lm -lpthread
+
+# dc_nonw_m: bin
+# 	cd src; gcc -std=c99 -g -D THREADS=$(THREADS) -Wall $(targets) main.c \
+# 	-D LOCAL_SEARCH -D LOCALSEARCH_DONT_USE_WHITAKER \
+# 	-o ../bin/dc_nonw_m -lm -lpthread
 
 # many_bin: bin tests
 # 	for i in 0 1 2 3 4 5 6 7 8 9 10; do \

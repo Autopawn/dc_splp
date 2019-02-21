@@ -21,6 +21,7 @@ paper
 *.png
 delme*
 no_parallel.txt
+old_bin
 
 tests
 

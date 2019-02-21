@@ -70,10 +70,9 @@ problem *load_simple_format(FILE *fp){
         prob->weights[j] = 1;
     }
 
-    // Compute facility distance matrix:
-    printf("Computing facility-facility distance matrix...\n");
-    problem_create_facility_dist_matrix(prob);
-    problem_create_facility_nearest_matrix(prob);
+    // Precomputations
+    printf("Performing precomputations...\n");
+    problem_precompute(prob);
 
     //
     return prob;
@@ -167,10 +166,9 @@ problem *load_orlib_format(FILE *fp){
         }
     }
 
-    // Compute facility distance matrix:
-    printf("Computing facility-facility distance matrix...\n");
-    problem_create_facility_dist_matrix(prob);
-    problem_create_facility_nearest_matrix(prob);
+    // Precomputations
+    printf("Performing precomputations...\n");
+    problem_precompute(prob);
 
     //
     return prob;
@@ -225,23 +223,35 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     fprintf(fp,"# Iterations: %d\n",n_iterations);
     fprintf(fp,"# Final_solutions: %d\n",tot_n_sols);
     fprintf(fp,"# Vision_range: %d\n",vision_range);
-    #ifdef REDUCTION_HAUSDORFF
-    fprintf(fp,"# Dissimilitude: HAUSDORFF\n");
-    #else
-    fprintf(fp,"# Dissimilitude: MEAN_GEOMETRIC_ERROR\n");
-    #endif
-    #ifdef FDIST_SUM_MODE
-    fprintf(fp,"# Facility_dist: SUM_OF_DELTAS\n");
-    #else
-    fprintf(fp,"# Facility_dist: MINIMUM\n");
-    #endif
     #ifdef REDUCTION_BESTS
-    fprintf(fp,"# Reduction_mode: REDUCTION_BESTS\n");
-    #else
-    #ifdef REDUCTION_RANDOM
-    #else
-    fprintf(fp,"# Reduction_mode: RANDOM\n");
+        fprintf(fp,"# Reduction_mode: REDUCTION_BESTS\n");
     #endif
+    #ifdef REDUCTION_RANDOM
+        fprintf(fp,"# Reduction_mode: REDUCTION_RANDOM\n");
+    #endif
+    #ifdef REDUCTION_DISPERSE
+        fprintf(fp,"# Reduction_mode: REDUCTION_DISPERSE\n");
+        #ifdef DISSIM_MSE
+            fprintf(fp,"# Dissimilitude: DISSIM_MSE\n");
+            #ifdef FDISMODE_SUMOFDELTAS
+            fprintf(fp,"# Facility_dist: FDISMODE_SUMOFDELTAS\n");
+            #endif
+            #ifdef FDISMODE_MINDIST
+            fprintf(fp,"# Facility_dist: FDISMODE_MINDIST\n");
+            #endif
+        #endif
+        #ifdef DISSIM_HAUSDORFF
+            fprintf(fp,"# Dissimilitude: DISSIM_HAUSDORFF\n");
+            #ifdef FDISMODE_SUMOFDELTAS
+                fprintf(fp,"# Facility_dist: FDISMODE_SUMOFDELTAS\n");
+            #endif
+            #ifdef FDISMODE_MINDIST
+                fprintf(fp,"# Facility_dist: FDISMODE_MINDIST\n");
+            #endif
+        #endif
+        #ifdef DISSIM_CLIENTDELTA
+            fprintf(fp,"# Dissimilitude: DISSIM_CLIENTDELTA\n");
+        #endif
     #endif
     // Print the solutions:
     if(n_sols==0){
@@ -268,11 +278,11 @@ void print_solution(FILE *f, const solution *sol, double multiplier){
     fprintf(f,"\n");
     fprintf(f,"  Facilities: %d\n",sol->n_facilities);
     for(int i=0;i<sol->n_facilities;i++){
-        fprintf(f,"  %4d :",sol->facilities[i]);
+        fprintf(f," %d :",sol->facilities[i]);
         for(int j=0;j<MAX_CLIENTS;j++){
             if(sol->assignments[j]==-1) break;
             if(sol->assignments[j]==sol->facilities[i]){
-                fprintf(f,"%5d",j);
+                fprintf(f," %d",j);
             }
         }
         fprintf(f,"\n");

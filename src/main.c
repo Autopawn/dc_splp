@@ -48,13 +48,7 @@ int main(int argc, char **argv){
     }
     printf("Pool size: %d\n",pool_size);
     assert(vision_range>=0);
-    if(pool_size==1){
-        vision_range=1;
-        printf("Vision range: %d\n",vision_range);
-        printf("\t(Greedy)\n");
-    }else{
-        printf("Vision range: %d\n",vision_range);
-    }
+    printf("Vision range: %d\n",vision_range);
     printf("Max solutions to show: %d\n",max_to_show);
 
     // ---@> Start counting time

@@ -19,10 +19,25 @@ fnames=$(find $target | grep -v 'kmedian' | \
 fnames="$fnames $target"
 
 parameters="\
-    dc_normmin_200_400 dc_normsum_200_400 \
-    dc_hausmin_200_400 dc_haussum_200_400 \
-    dc_normmin_400_600 dc_normsum_400_600 \
-    dc_rand_200_0 dc_best_200_0 dc_rand_400_0 dc_best_400_0"
+    dc_dismsemin_200_400 dc_dismsesum_200_400 \
+    dc_dishaumin_200_400 dc_dishausum_200_400 \
+    dc_discli_200_400 \
+    dc_bes_200_0 \
+    dc_ran_200_0 \
+    "
+
+# parameters="\
+#     dc_dismsemin_200_400 dc_dismsesum_200_400 \
+#     dc_dishaumin_200_400 dc_dishausum_200_400 \
+#     dc_discli_200_400 \
+#     dc_bes_200_0 \
+#     dc_ran_200_0 \
+#     dc_dismsemin_400_600 dc_dismsesum_400_600 \
+#     dc_dishaumin_400_600 dc_dishausum_400_600 \
+#     dc_discli_400_600 \
+#     dc_bes_400_0 \
+#     dc_ran_400_0 \
+#     "
 
 # Delete problem_list files
 mkdir -p "$resfolder"
