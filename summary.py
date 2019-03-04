@@ -123,6 +123,14 @@ problems = {}
 problems['opt'] = get_dirs(prob_dir,".opt")
 problems['bub'] = get_dirs(prob_dir,".bub")
 
+# Grand totals
+total_perces = []
+total_times = []
+total_times_ls = []
+total_iters = []
+total_finals = []
+total_optis = 0
+
 summary = {}
 for kind in ('opt','bub'):
     summary[kind] = []
@@ -140,6 +148,8 @@ for kind in ('opt','bub'):
     # ---
 
     for group in group_names:
+        group_name = '/'.join(group)
+        if group_name=='kmedian': continue #NOTE: hardcoded exlcusion of kmedian
 
         # Find the specific problems for this group:
         group_prob_names = [x for x in prob_names if get_group(x)==group]
@@ -174,7 +184,6 @@ for kind in ('opt','bub'):
                 joined,n_clients,n_opt_facilities,opt_data[1])
 
         # Print problem and opt solutions description
-        group_name = '/'.join(group)
         print("-"*20)
         min_p = np.min(ps)
         max_p = np.max(ps)
@@ -202,6 +211,7 @@ for kind in ('opt','bub'):
         for mode in ('','_ls'):
             strings = []
             perces = []
+            perces_all = []
             times = []
             iters = []
             finals = []
@@ -240,6 +250,19 @@ for kind in ('opt','bub'):
                             sol_data[1],perce))
                 if (show or kind=='bub') and perce!=0:
                     perces.append(perce)
+                if perce!=0:
+                    perces_all.append(perce)
+                else:
+                    print("\033[0;31m WARNING: perces=0!!!! \033[0m")
+            # For the all summary:
+            if mode=='_ls':
+                total_perces += perces_all
+                total_times_ls += times
+                total_iters += iters
+                total_finals += finals
+                total_optis += optis+betters
+            else:
+                total_times += times
             # Print solutions description
             if nones==0:
                 red = ''
@@ -281,3 +304,16 @@ for kind in ('opt','bub'):
     print(table)
     print("\\\\ \\hline")
     print("="*20)
+
+# Grand totals table row:
+n_probs = len(total_perces)
+total_perces = np.mean(total_perces)
+total_times = np.sum(total_times)
+total_times_ls = np.sum(total_times_ls)
+time_ls_prop = 100*(total_times_ls-total_times)/total_times_ls
+total_iters = np.mean(total_iters)
+total_finals = np.mean(total_finals)
+
+print("\\hline \\textbf{Strategy} & \\textbf{Opt.} & \\textbf{Mean rel. cost} & \\textbf{Time}[s] & \\textbf{Time LS} & $\\bar{X}$ \\textbf{iters.} & $\\bar{X}$ \\textbf{local opt.}")
+nam = sys.argv[2].replace("_","\_")
+print("\\\\ %s & $%d/%d$ & $%f$ & $%.0f$ & $%.2f\\%%$ & $%.3f$ & $%.3f$"%(nam,total_optis,n_probs,total_perces,total_times_ls,time_ls_prop,total_iters,total_finals))
