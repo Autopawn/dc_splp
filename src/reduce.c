@@ -19,19 +19,63 @@ int dissimpair_cmp(dissimpair a, dissimpair b){
     return delta;
 }
 
-dissimpair heap_poll(dissimpair *heap, int *size){
-    dissimpair retp = heap[0];
-    heap[0] = heap[*size-1];
-    *size -= 1;
+// It's a regular heap but the main array is partitioned in arrays of HEAP_PARTITION size,
+// to avoid mallocating huge blocks.
+
+#ifndef HEAP_PARTITION
+#define HEAP_PARTITION 1073741824
+#endif
+
+typedef struct{
+    dissimpair **pairs;
+    int n_pairs;
+    int n_partitions;
+} pairheap;
+
+pairheap *pairheap_init(int size){
+    pairheap *heap = safe_malloc(sizeof(pairheap));
+    heap->n_pairs = 0;
+    heap->n_partitions = (size+HEAP_PARTITION-1)/HEAP_PARTITION;
+    heap->pairs = safe_malloc(sizeof(dissimpair*)*heap->n_partitions);
+    for(int i=0;i<heap->n_partitions;i++){
+        int part_size = i==heap->n_partitions-1? size-HEAP_PARTITION*(heap->n_partitions-1): HEAP_PARTITION;
+        heap->pairs[i] = safe_malloc(sizeof(dissimpair)*part_size);
+    }
+    return heap;
+}
+
+void pairheap_free(pairheap *heap){
+    for(int i=0;i<heap->n_partitions;i++){
+        free(heap->pairs[i]);
+    }
+    free(heap->pairs);
+    free(heap);
+}
+
+dissimpair pairheap_get(pairheap *heap, int i){
+    int part = i/HEAP_PARTITION;
+    int comp = i-part*HEAP_PARTITION;
+    return heap->pairs[part][comp];
+}
+void pairheap_set(pairheap *heap, int i, dissimpair v){
+    int part = i/HEAP_PARTITION;
+    int comp = i-part*HEAP_PARTITION;
+    heap->pairs[part][comp] = v;
+}
+
+dissimpair pairheap_poll(pairheap *heap){
+    dissimpair retp = pairheap_get(heap,0);
+    pairheap_set(heap,0,pairheap_get(heap,heap->n_pairs-1));
+    heap->n_pairs -= 1;
     // Heapify down:
     int i = 0;
     int c = 2*i+1;
-    while(c<*size){
-        if(c+1<*size && dissimpair_cmp(heap[c+1],heap[c])<0) c = c+1;
-        if(dissimpair_cmp(heap[i],heap[c])<0) break;
-        dissimpair aux = heap[i];
-        heap[i] = heap[c];
-        heap[c] = aux;
+    while(c<heap->n_pairs){
+        if(c+1<heap->n_pairs && dissimpair_cmp(pairheap_get(heap,c+1),pairheap_get(heap,c))<0) c = c+1;
+        if(dissimpair_cmp(pairheap_get(heap,i),pairheap_get(heap,c))<0) break;
+        dissimpair aux = pairheap_get(heap,i);
+        pairheap_set(heap,i,pairheap_get(heap,c));
+        pairheap_set(heap,c,aux);
         i = c;
         c = 2*i+1;
     }
@@ -39,16 +83,16 @@ dissimpair heap_poll(dissimpair *heap, int *size){
     return retp;
 }
 
-void heap_add(dissimpair *heap, int *size, dissimpair val){
-    heap[*size] = val;
-    *size += 1;
+void pairheap_add(pairheap *heap, dissimpair val){
+    pairheap_set(heap,heap->n_pairs,val);
+    heap->n_pairs += 1;
     // Heapify up:
-    int i = *size-1;
+    int i = heap->n_pairs-1;
     int p = (i-1)/2;
-    while(i>0 && dissimpair_cmp(heap[i],heap[p])<0){
-        dissimpair aux = heap[i];
-        heap[i] = heap[p];
-        heap[p] = aux;
+    while(i>0 && dissimpair_cmp(pairheap_get(heap,i),pairheap_get(heap,p))<0){
+        dissimpair aux = pairheap_get(heap,i);
+        pairheap_set(heap,i,pairheap_get(heap,p));
+        pairheap_set(heap,p,aux);
         i = p;
         p = (i-1)/2;
     }
@@ -65,8 +109,7 @@ typedef struct {
     int thread_id;
     // Concurrent access to heap.
     pthread_mutex_t *heap_mutex;
-    dissimpair *heap;
-    int *heap_n_pairs;
+    pairheap *heap;
     // Concurrent access to prev and next solution lists to build reposition pairs.
     sem_t *thread_sem;
     sem_t *complete_sem; // Inform that thread has terminated with its reposition pairs.
@@ -99,7 +142,7 @@ void *reduce_thread_execution(void *arg){
         // Save pairs in the heap
         pthread_mutex_lock(args->heap_mutex);
             for(int k=0;k<n_pairs;k++){
-                heap_add(args->heap,args->heap_n_pairs,pairs[k]);
+                pairheap_add(args->heap,pairs[k]);
             }
         pthread_mutex_unlock(args->heap_mutex);
         // Delete pairs
@@ -136,7 +179,7 @@ void *reduce_thread_execution(void *arg){
                 // Add pairs in buffer to to the heap if mutex is free
                 if(pthread_mutex_trylock(args->heap_mutex)==0){
                     for(int k=0;k<pair_buffer_len;k++){
-                        heap_add(args->heap,args->heap_n_pairs,pair_buffer[k]);
+                        pairheap_add(args->heap,pair_buffer[k]);
                     }
                     pthread_mutex_unlock(args->heap_mutex);
                     pair_buffer_len = 0;
@@ -147,7 +190,7 @@ void *reduce_thread_execution(void *arg){
         if(pair_buffer_len>0){
             pthread_mutex_lock(args->heap_mutex);
             for(int i=0;i<pair_buffer_len;i++){
-                heap_add(args->heap,args->heap_n_pairs,pair_buffer[i]);
+                pairheap_add(args->heap,pair_buffer[i]);
             }
             pthread_mutex_unlock(args->heap_mutex);
             pair_buffer_len = 0;
@@ -238,8 +281,7 @@ void reduce_solutions(const problem *prob,
 
     #if THREADS>0
         // Heap of dissimilitude pairs
-        int n_pairs = 0;
-        dissimpair *heap = safe_malloc(sizeof(dissimpair)*2*(*n_sols)*vision_range);
+        pairheap *heap = pairheap_init(2*(*n_sols)*vision_range);
         pthread_mutex_t heap_mutex;
         pthread_mutex_init(&heap_mutex,NULL);
         //
@@ -257,7 +299,6 @@ void reduce_solutions(const problem *prob,
             targs[i].thread_id = i;
             targs[i].heap_mutex = &heap_mutex;
             targs[i].heap = heap;
-            targs[i].heap_n_pairs = &n_pairs;
             //
             targs[i].thread_sem = &t_sems[i];
             targs[i].complete_sem = &c_sems[i];
@@ -283,8 +324,7 @@ void reduce_solutions(const problem *prob,
         // ---@> At this point, all initial dissimilitude pairs are complete.
     #else
         // Heap of dissimilitude pairs
-        int n_pairs = 0;
-        dissimpair *heap = safe_malloc(sizeof(dissimpair)*2*(*n_sols)*vision_range);
+        pairheap *heap = pairheap_init(2*(*n_sols)*vision_range);
         // Initial set of dissimilitude pairs
         for(int i=0;i<*n_sols;i++){
             for(int j=1;j<=vision_range;j++){
@@ -294,7 +334,7 @@ void reduce_solutions(const problem *prob,
                 pair.indx_b = i+j;
                 pair.dissim = solution_dissimilitude(prob,
                     sols[pair.indx_a],sols[pair.indx_b]);
-                heap_add(heap,&n_pairs,pair);
+                pairheap_add(heap,pair);
             }
         }
     #endif
@@ -304,8 +344,8 @@ void reduce_solutions(const problem *prob,
     int elims = 0;
     while(elims<n_eliminate){
         // Eliminate worst solution of most similar pair
-        if(n_pairs==0) break;
-        dissimpair pair = heap_poll(heap,&n_pairs);
+        if(heap->n_pairs==0) break;
+        dissimpair pair = pairheap_poll(heap);
         if(!discarted[pair.indx_a] && !discarted[pair.indx_b]){
             // Delete the second solution on the pair.
             int to_delete = pair.indx_b;
@@ -358,8 +398,8 @@ void reduce_solutions(const problem *prob,
                         pair.indx_b = pair_b;
                         pair.dissim = solution_dissimilitude(prob,
                             sols[pair.indx_a],sols[pair.indx_b]);
-                        assert(n_pairs<2*(*n_sols)*vision_range);
-                        heap_add(heap,&n_pairs,pair);
+                        assert(heap->n_pairs<2*(*n_sols)*vision_range);
+                        pairheap_add(heap,pair);
                     }
                 }
             #endif
@@ -392,8 +432,7 @@ void reduce_solutions(const problem *prob,
     free(prev_sols);
     free(next_sols);
     // Free all the pairs:
-    free(heap);
-    n_pairs = 0;
+    pairheap_free(heap);
     // Set output final array:
     int new_nsols=0;
     for(int i=0;i<*n_sols;i++){

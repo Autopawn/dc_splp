@@ -310,10 +310,10 @@ n_probs = len(total_perces)
 total_perces = np.mean(total_perces)
 total_times = np.sum(total_times)
 total_times_ls = np.sum(total_times_ls)
-time_ls_prop = 100*(total_times_ls-total_times)/total_times_ls
+time_ls = total_times_ls-total_times
 total_iters = np.mean(total_iters)
 total_finals = np.mean(total_finals)
 
-print("\\hline \\textbf{Strategy} & \\textbf{Opt.} & \\textbf{Mean rel. cost} & \\textbf{Time}[s] & \\textbf{Time LS} & $\\bar{X}$ \\textbf{iters.} & $\\bar{X}$ \\textbf{local opt.}")
+print("\\hline \\textbf{Strategy} & \\textbf{Opt.} & \\textbf{Mean rel. cost} & \\textbf{Time Total}[s] & \\textbf{Time LS}[s] & $\\bar{X}$ \\textbf{iters.} & $\\bar{X}$ \\textbf{local opt.}")
 nam = sys.argv[2].replace("_","\_")
-print("\\\\ %s & $%d/%d$ & $%f$ & $%.0f$ & $%.2f\\%%$ & $%.3f$ & $%.3f$"%(nam,total_optis,n_probs,total_perces,total_times_ls,time_ls_prop,total_iters,total_finals))
+print("\\\\ %s & $%d/%d$ & $%f$ & $%.0f$ & $%.0f$ & $%.3f$ & $%.3f$"%(nam,total_optis,n_probs,total_perces,total_times_ls,time_ls,total_iters,total_finals))
