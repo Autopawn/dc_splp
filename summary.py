@@ -147,6 +147,16 @@ for kind in ('opt','bub'):
     table = []
     # ---
 
+    if kind=='bub':
+        # Metrics only for .bub
+        bub_perces = []
+        bub_times = []
+        bub_times_ls = []
+        bub_iters = []
+        bub_finals = []
+        bub_optis = 0
+        bub_betters = 0
+
     for group in group_names:
         group_name = '/'.join(group)
         if group_name=='kmedian': continue #NOTE: hardcoded exlcusion of kmedian
@@ -255,6 +265,17 @@ for kind in ('opt','bub'):
                 else:
                     print("\033[0;31m WARNING: perces=0!!!! \033[0m")
             # For the all summary:
+            if kind=='bub':
+                if mode=='_ls':
+                    bub_perces += perces_all
+                    bub_times_ls += times
+                    bub_iters += iters
+                    bub_finals += finals
+                    bub_optis += optis
+                    bub_betters += betters
+                else:
+                    bub_times += times
+
             if mode=='_ls':
                 total_perces += perces_all
                 total_times_ls += times
@@ -313,7 +334,21 @@ total_times_ls = np.sum(total_times_ls)
 time_ls = total_times_ls-total_times
 total_iters = np.mean(total_iters)
 total_finals = np.mean(total_finals)
-
+print("TOTALS:")
 print("\\hline \\textbf{Strategy} & \\textbf{Opt.} & \\textbf{Mean rel. cost} & \\textbf{Time Total}[s] & \\textbf{Time LS}[s] & $\\bar{X}$ \\textbf{iters.} & $\\bar{X}$ \\textbf{local opt.}")
 nam = sys.argv[2].replace("_","\_")
 print("\\\\ %s & $%d/%d$ & $%f$ & $%.0f$ & $%.0f$ & $%.3f$ & $%.3f$"%(nam,total_optis,n_probs,total_perces,total_times_ls,time_ls,total_iters,total_finals))
+
+# Bub totals table row:
+bub_n_probs = len(bub_perces)
+bub_worst = bub_n_probs-bub_optis-bub_betters
+bub_perces = np.mean(bub_perces)
+bub_times = np.sum(bub_times)
+bub_times_ls = np.sum(bub_times_ls)
+bub_time_ls = bub_times_ls-bub_times
+bub_iters = np.mean(bub_iters)
+bub_finals = np.mean(bub_finals)
+
+print("BUB:")
+print("\\hline \\textbf{Strategy} & \\textbf{Better} & \\textbf{Same} & \\textbf{Worse} & \\textbf{Mean rel. cost} & \\textbf{Time Total}[s] & \\textbf{Time LS}[s] & \\textbf{Iters.}")
+print("\\\\ %s & $%d$ & $%d$ & $%d$ & $%.6f$ & $%.0f$ & $%.0f$ & $%.3f$ "%(nam,bub_betters,bub_optis,bub_worst,bub_perces,bub_times_ls,bub_time_ls,bub_iters))
