@@ -53,11 +53,13 @@ void pairheap_free(pairheap *heap){
 }
 
 dissimpair pairheap_get(pairheap *heap, int i){
+    assert(i<heap->n_pairs);
     int part = i/HEAP_PARTITION;
     int comp = i-part*HEAP_PARTITION;
     return heap->pairs[part][comp];
 }
 void pairheap_set(pairheap *heap, int i, dissimpair v){
+    assert(i<heap->n_pairs);
     int part = i/HEAP_PARTITION;
     int comp = i-part*HEAP_PARTITION;
     heap->pairs[part][comp] = v;
@@ -84,8 +86,8 @@ dissimpair pairheap_poll(pairheap *heap){
 }
 
 void pairheap_add(pairheap *heap, dissimpair val){
-    pairheap_set(heap,heap->n_pairs,val);
     heap->n_pairs += 1;
+    pairheap_set(heap,heap->n_pairs-1,val);
     // Heapify up:
     int i = heap->n_pairs-1;
     int p = (i-1)/2;

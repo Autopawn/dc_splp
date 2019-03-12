@@ -1,9 +1,10 @@
 #include "common.h"
 
 void *safe_malloc(size_t size){
+    assert(errno==0);
     void *ptr = malloc(size);
-    if(size>0 && ptr==NULL){
-        fprintf(stderr,"ERROR: Not enough memory!\n");
+    if((size>0 && ptr==NULL) || errno!=0){
+        fprintf(stderr,"ERROR (on malloc): %s\n",strerror(errno));
         exit(1);
     }
     return ptr;
