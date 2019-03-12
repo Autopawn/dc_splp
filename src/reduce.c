@@ -21,11 +21,6 @@ int dissimpair_cmp(dissimpair a, dissimpair b){
 
 // It's a regular heap but the main array is partitioned in arrays of HEAP_PARTITION size,
 // to avoid mallocating huge blocks.
-
-#ifndef HEAP_PARTITION
-#define HEAP_PARTITION 1073741824
-#endif
-
 typedef struct{
     dissimpair **pairs;
     int n_pairs;
@@ -70,8 +65,8 @@ dissimpair pairheap_poll(pairheap *heap){
     pairheap_set(heap,0,pairheap_get(heap,heap->n_pairs-1));
     heap->n_pairs -= 1;
     // Heapify down:
-    int i = 0;
-    int c = 2*i+1;
+    unsigned int i = 0;
+    unsigned int c = 2*i+1;
     while(c<heap->n_pairs){
         if(c+1<heap->n_pairs && dissimpair_cmp(pairheap_get(heap,c+1),pairheap_get(heap,c))<0) c = c+1;
         if(dissimpair_cmp(pairheap_get(heap,i),pairheap_get(heap,c))<0) break;
@@ -89,8 +84,8 @@ void pairheap_add(pairheap *heap, dissimpair val){
     heap->n_pairs += 1;
     pairheap_set(heap,heap->n_pairs-1,val);
     // Heapify up:
-    int i = heap->n_pairs-1;
-    int p = (i-1)/2;
+    unsigned int i = heap->n_pairs-1;
+    unsigned int p = (i-1)/2;
     while(i>0 && dissimpair_cmp(pairheap_get(heap,i),pairheap_get(heap,p))<0){
         dissimpair aux = pairheap_get(heap,i);
         pairheap_set(heap,i,pairheap_get(heap,p));
