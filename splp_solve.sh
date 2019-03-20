@@ -27,8 +27,8 @@ echo '$1' "$1" >> "$resfolder/$1/$group/problem_list"
 echo "$files" | tr " " "\n" >> "$resfolder/$1/$group/problem_list"
 for prob in $files; do
     if [ ! -f "$resfolder/$1/""$prob""_ls" ]; then
-        if [ "$gname" == "kmedian" ]; then
-            echo "Calling L on $prob"
+        if [ "$gname" == "plarge" ] || [ "$gname" == "kmedian" ]; then
+            echo "Calling L on $prob" >> large_list
             ./bin/"$exec"L "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
         else
             ./bin/"$exec" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"

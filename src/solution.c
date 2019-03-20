@@ -80,15 +80,17 @@ void solution_add(const problem *prob, solution *sol, short newf){
 
 // | Removes a facility of the solution:
 void solution_remove(const problem *prob, solution *sol, short remf){
-    // Assert that remf is on the solution
-    int inner_i = -1;
-    for(int f=0;f<sol->n_facilities;f++){
-        if(sol->facilities[f]==remf){
-            inner_i=f;
-            break;
+    #ifndef NDEBUG
+        // Assert that remf is on the solution
+        int inner_i = -1;
+        for(int f=0;f<sol->n_facilities;f++){
+            if(sol->facilities[f]==remf){
+                inner_i=f;
+                break;
+            }
         }
-    }
-    assert(inner_i!=-1);
+        assert(inner_i!=-1);
+    #endif
     // Remove the facility of the solution.
     rem_of_sorted(sol->facilities,&sol->n_facilities,remf);
     // The void solution:
@@ -250,8 +252,10 @@ void solution_copy(const problem *prob, solution *dest, const solution *source){
 
 // Takes a solution and uses hill climbing with best-improvement, using an exchange movement.
 solution solution_hill_climbing(const problem *prob, solution sol){
-    lint old_value = sol.value;
-    int old_n_facilities = sol.n_facilities;
+    #ifndef NDEBUG
+        lint old_value = sol.value;
+        int old_n_facilities = sol.n_facilities;
+    #endif
     if(sol.n_facilities==0) return sol;
     solution best = sol;
     #ifndef LOCALSEARCH_DONT_USE_WHITAKER
@@ -384,7 +388,9 @@ solution solution_whitaker_hill_climbing(const problem *prob, solution sol){
         // Stop when done:
         if(best_ins==-1) break;
         // Perform swap:
-        lint old_value = sol.value;
+        #ifndef NDEBUG
+            lint old_value = sol.value;
+        #endif
         solution_remove(prob,&sol,best_rem);
         solution_add(prob,&sol,best_ins);
         assert(sol.value>old_value);
