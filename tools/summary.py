@@ -2,21 +2,11 @@ import os
 import sys
 import numpy as np
 
+from file_navigation import *
+
 DEEPNESS=1
 
 # -- --
-
-def get_dirs(dir,ext=None):
-    dirs = []
-    for subdir in os.listdir(dir):
-        subdir_path = os.path.join(dir,subdir)
-        if os.path.isdir(subdir_path):
-            contents = get_dirs(subdir_path,ext)
-            dirs += [[subdir]+x for x in contents]
-        else:
-            if ext is None or (len(subdir)>=len(ext) and subdir[-len(ext):]==ext):
-                dirs += [[subdir]]
-    return dirs
 
 def read_optimum(fname):
     fi = open(fname)
