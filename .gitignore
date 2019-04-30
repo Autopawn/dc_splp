@@ -5,6 +5,7 @@ res
 custom
 custom_res
 table.txt
+__pycache__
 
 data/*
 result

@@ -1,15 +1,19 @@
 #!/bin/bash
 
-if [ "$#" -ne 2 ]; then
-    echo "usage: $0 <target_folder> <res_folder>"
-    echo "e.g.:  $0 \"splp\" \"res\""
-    echo "e.g.:  $0 \"custom\" \"res\""
+quser=fcasas
+maxjobs=200
+
+if [ "$#" -ne 3 ]; then
+    echo "usage: $0 <target_folder> <res_folder> <parameters>"
+    echo "e.g.:  $0 \"splp\" \"res\" \"dc_dismsemin_50_100 dc_dismsesum_50_100\""
+    echo "e.g.:  $0 \"pmedian\" \"res\" \"dc_dismsemin_50_100 dc_dismsesum_50_100\""
     echo "also, remember to 'make'!"
     exit 1
 fi
 
 target=$1
 resfolder=$2
+parameters=$3
 
 fnames=$(find $target | \
     grep -v '\.opt' | grep -v '\.bub' | grep -v 'README' | \
@@ -18,65 +22,6 @@ fnames=$(find $target | \
     grep -v '\.lp' \
     )
 fnames="$fnames $target"
-
-# NOTE: for splp
-parameters="\
-    dc_dismsemin_200_400 dc_dismsesum_200_400 \
-    dc_dishaumin_200_400 dc_dishausum_200_400 \
-    dc_discli_200_400 \
-    dc_bes_200_0 \
-    dc_ran_200_0 \
-    dc_dismsemin_400_600 dc_dismsesum_400_600 \
-    dc_dishaumin_400_600 dc_dishausum_400_600 \
-    dc_discli_400_600 \
-    dc_bes_400_0 \
-    dc_ran_400_0 \
-    dc_bes_1000_0 \
-    dc_ran_1000_0 \
-    "
-
-# NOTE: for custom
-parameters="\
-    dc_dismsemin_200_400 \
-    dc_bes_200_0 \
-    dc_ran_200_0 \
-    dc_dismsemin_400_600 \
-    dc_bes_400_0 \
-    dc_ran_400_0 \
-    dc_bes_1000_0 \
-    dc_ran_1000_0 \
-    "
-
-# NOTE: for pmedian_large
-parameters="\
-    dc_dismsemin_50_100 dc_dismsesum_50_100 \
-    dc_dishaumin_50_100 dc_dishausum_50_100 \
-    dc_discli_50_100 \
-    dc_bes_200_0 \
-    dc_ran_200_0 \
-    dc_bes_400_0 \
-    dc_ran_400_0 \
-    dc_bes_1000_0 \
-    dc_ran_1000_0 \
-    "
-
-# # NOTE: for splp_kmedian
-# parameters="\
-#     dc_dismsemin_50_100 dc_dismsesum_50_100 \
-#     dc_dishaumin_50_100 dc_dishausum_50_100 \
-#     dc_discli_50_100 \
-#     dc_bes_50_0 \
-#     dc_ran_50_0 \
-#     "
-
-# Delete problem_list files
-mkdir -p "$resfolder"
-for probfile in $(find "$resfolder" | grep problem_list); do
-    rm $probfile
-done
-
-# make
-# rm -rf res || true
 
 for params in $parameters; do
     problems=""
@@ -87,6 +32,9 @@ for params in $parameters; do
                 n2=$(echo $params | cut -d'_' -f2)
                 ng=$(echo $params | cut -d'_' -f3)
                 name="$n2"_"$ng"_"$gname"
+                while [ "$(qselect -u $quser | wc -l)" -gt "$maxjobs" ]; do
+                    sleep 5
+                done
                 echo "calling $name"
                 qsub -N $name splp_solve.sh \
                     -F "$params \"$group\" \"$problems\" \"$resfolder\"" || \
