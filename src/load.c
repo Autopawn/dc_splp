@@ -277,6 +277,13 @@ void print_solution(FILE *f, const solution *sol, double multiplier){
     }
     fprintf(f,"\n");
     fprintf(f,"  Facilities: %d\n",sol->n_facilities);
+    //
+    fprintf(f,"  Indexes: ");
+    for(int i=0;i<sol->n_facilities;i++){
+        fprintf(f,"%d ",sol->facilities[i]);
+    }
+    fprintf(f,"\n");
+    //
     for(int i=0;i<sol->n_facilities;i++){
         fprintf(f," %d :",sol->facilities[i]);
         for(int j=0;j<MAX_CLIENTS;j++){
