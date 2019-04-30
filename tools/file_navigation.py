@@ -33,7 +33,8 @@ def extract_field(fname,field,func=float):
         if ":" in lin:
             lin = lin.strip()
             fie,val = lin.split(":")
-            fie = fie.replace(" ","")
+            while fie[0]==" ":
+                fie = fie[1:]
             if fie==field:
                 value = func(val)
                 break

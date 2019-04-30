@@ -8,9 +8,16 @@ from file_navigation import *
 FIELDS = [
     {
         "attr_name":"Value",
+        "file_name":"value",
         "plot_name":"Mean error",
         "value": lambda vals,opts: np.mean((-vals/opts)-1),
-    }
+    },
+    {
+        "attr_name":"# Time",
+        "file_name":"time",
+        "plot_name":"Mean time",
+        "value": lambda vals,opts: np.mean(vals),
+    },
 ]
 
 PROBLEM_DIR = "custom"
@@ -50,6 +57,8 @@ if __name__ == '__main__':
         # Field name: -> new plot
         for field in FIELDS:
             fig, axs = plt.subplots(nrows=1,ncols=len(ps),sharex=True,sharey=True,figsize=(14,5))
+            lines = {}
+            colors = {}
             # Value of p -> new sub-plot
             for i,p in enumerate(ps):
                 ax = axs[i]
@@ -88,10 +97,13 @@ if __name__ == '__main__':
                         points_y.append(value)
                     if valid_variant:
                         # Plot on this axis
-                        ax.plot(ns,points_y,label=vari)
+                        if vari not in colors:
+                            colors[vari] = 'C'+str(len(colors))
+                        lines[vari] = ax.plot(ns,points_y,label=vari,c=colors[vari])[0]
                 #
             #
             fig.suptitle("%s for %s"%(field["plot_name"],kind))
-            fig.legend(loc='upper center',bbox_to_anchor=(0.5, 0.85),ncol=4,fancybox=True)
-            fig.savefig(kind+"_"+field["attr_name"].lower()+".png")
+            fig.legend(lines.values(),lines.keys(),
+                loc='upper center',bbox_to_anchor=(0.5, 0.85),ncol=4,fancybox=True)
+            fig.savefig(kind+"_"+field["file_name"].lower()+".png")
         #
