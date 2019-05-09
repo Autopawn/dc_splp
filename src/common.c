@@ -60,7 +60,7 @@ int distduple_cmp(const void *a, const void *b){
 }
 
 void problem_precompute(problem *prob){
-    #if defined(REDUCTION_DISPERSE) && (defined(DISSIM_MSE) || defined(DISSIM_HAUSDORFF))
+    #if defined(REDUCTION_VR) && (defined(DISSIM_MSE) || defined(DISSIM_HAUSDORFF))
         // ---@>
         // sets the distance between facilities (the fdistance matrix)
         // mode 's':   d(a,b) = min_j d(a,j)+d(b,j)

@@ -99,7 +99,7 @@ void pairheap_add(pairheap *heap, dissimpair val){
 // MULTITHREAD DISSIMILITUDE COMPUTATION
 //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-#if defined(REDUCTION_DISPERSE) && THREADS>0
+#if defined(REDUCTION_VR) && THREADS>0
 
 typedef struct {
     // Thread id:
@@ -246,7 +246,7 @@ void reduce_solutions(const problem *prob,
 
 #endif
 
-#ifdef REDUCTION_DISPERSE
+#ifdef REDUCTION_VR
 
 void reduce_solutions(const problem *prob,
         solution **sols, int *n_sols, int target_n, int vision_range){

@@ -229,8 +229,8 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     #ifdef REDUCTION_RANDOM
         fprintf(fp,"# Reduction_mode: REDUCTION_RANDOM\n");
     #endif
-    #ifdef REDUCTION_DISPERSE
-        fprintf(fp,"# Reduction_mode: REDUCTION_DISPERSE\n");
+    #ifdef REDUCTION_VR
+        fprintf(fp,"# Reduction_mode: REDUCTION_VR\n");
         #ifdef DISSIM_MSE
             fprintf(fp,"# Dissimilitude: DISSIM_MSE\n");
             #ifdef FDISMODE_SUMOFDELTAS
