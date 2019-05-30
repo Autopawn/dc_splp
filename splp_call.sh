@@ -5,8 +5,8 @@ maxjobs=200
 
 if [ "$#" -ne 3 ]; then
     echo "usage: $0 <target_folder> <res_folder> <parameters>"
-    echo "e.g.:  $0 \"splp\" \"res\" \"dc_dismsemin_50_100 dc_dismsesum_50_100\""
-    echo "e.g.:  $0 \"pmedian\" \"res\" \"dc_dismsemin_50_100 dc_dismsesum_50_100\""
+    echo "e.g.:  $0 \"splp\" \"res\" \"dc_dismsemin_0_50_100 dc_dismsesum_0_50_100\""
+    echo "e.g.:  $0 \"pmedian\" \"res\" \"dc_dismsemin_0_50_100 dc_dismsesum_0_50_100\""
     echo "also, remember to 'make'!"
     exit 1
 fi
@@ -30,8 +30,9 @@ for params in $parameters; do
             if [ -n "$problems" ]; then
                 gname="$(echo $group | tr / _ | cut -d'_' -f2-)"
                 n2=$(echo $params | cut -d'_' -f2)
-                ng=$(echo $params | cut -d'_' -f3)
-                name="$n2"_"$ng"_"$gname"
+                n3=$(echo $params | cut -d'_' -f3)
+                ng=$(echo $params | cut -d'_' -f4)
+                name="$n2"_"$n3"_"$ng"_"$gname"
                 while [ "$(qselect -u $quser | wc -l)" -gt "$maxjobs" ]; do
                     sleep 5
                 done

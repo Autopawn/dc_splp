@@ -234,6 +234,14 @@ lint solution_dissimilitude(const problem *prob, const solution *sol_a, const so
 
 #endif
 
+#if !defined(DISSIM_CLIENTDELTA) && !defined(DISSIM_MSE) && !defined(DISSIM_HAUSDORFF)
+lint solution_dissimilitude(const problem *prob, const solution *sol_a, const solution *sol_b){
+    fprintf(stderr,"ERROR: tried to use undefined dissimilitude metric!\n");
+    exit(1);
+    return -1;
+}
+#endif
+
 void solution_copy(const problem *prob, solution *dest, const solution *source){
     // Copies a solution to a destiny
     dest->n_facilities = source->n_facilities;

@@ -6,7 +6,7 @@
 #include "load.h"
 
 solution **new_find_best_solutions(problem* prob,
-        int pool_size, int vision_range, int *final_n, int *n_iterations);
+        int n_random, int pool_size, int vision_range, int *final_n, int *n_iterations);
 
 void local_search_solutions(problem* prob, solution **sols, int *n_sols);
 

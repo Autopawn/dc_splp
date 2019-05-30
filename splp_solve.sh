@@ -13,8 +13,9 @@ if [ -n "${PBS_O_WORKDIR+1}" ]; then
 fi
 
 exec="$(echo $1 | cut -d'_' -f1-2 -)"
-pz="$(echo $1 | cut -d'_' -f3 -)"
-vr="$(echo $1 | cut -d'_' -f4 -)"
+ra="$(echo $1 | cut -d'_' -f3 -)"
+pz="$(echo $1 | cut -d'_' -f4 -)"
+vr="$(echo $1 | cut -d'_' -f5 -)"
 group="$2"
 gname="$(echo $group | tr / _ | cut -d'_' -f2-)"
 files="$3"
@@ -29,9 +30,9 @@ for prob in $files; do
     if [ ! -f "$resfolder/$1/""$prob""_ls" ]; then
         if [ "$gname" == "plarge" ] || [ "$gname" == "kmedian" ]; then
             echo "Calling L on $prob" >> large_list
-            ./bin/"$exec"L "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
+            ./bin/"$exec"L "$ra" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
         else
-            ./bin/"$exec" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
+            ./bin/"$exec" "$ra" "$pz" "$vr" 10 "$prob" "$resfolder/$1/$prob" "$resfolder/$1/""$prob""_ls"
         fi
         # # echo "./bin/\"$exec\" \"$pz\" \"$vr\" 10 \"$prob\" \"$resfolder/$1/$prob\" \"$resfolder/$1/\"\"$prob\"\"_ls\""
     fi

@@ -1,7 +1,7 @@
 #include "dsa.h"
 
 solution **new_find_best_solutions(problem* prob,
-        int pool_size, int vision_range, int *final_n, int *n_iterations){
+        int n_random, int pool_size, int vision_range, int *final_n, int *n_iterations){
     // Place to store all the pools:
     int pools_size[MAX_FACILITIES+1];
     for(int i=0;i<MAX_FACILITIES+1;i++) pools_size[i] = 0;
@@ -33,7 +33,7 @@ solution **new_find_best_solutions(problem* prob,
         printf("Reducing %d solutions of size %d...\n",pools_size[i],i);
         // Apply reduction on the pool:
         reduce_solutions(prob, pools[i], &pools_size[i],
-            pool_size, vision_range);
+            pool_size, n_random, vision_range);
         // Realloc to reduce memory usage:
         pools[i] = realloc(pools[i],sizeof(solution*)*pools_size[i]);
         //

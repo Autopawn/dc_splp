@@ -15,37 +15,52 @@ float get_delta_seconds(struct timeval tv1, struct timeval tv2){
 }
 
 int main(int argc, char **argv){
-    int pool_size,vision_range,max_to_show;
-    const char *input_file = NULL;
+    int n_random,pool_size,vision_range,max_to_show;
     int good = 1;
-    #ifdef LOCAL_SEARCH
-        if(argc!=7) good = 0;
-    #else
-        if(argc!=6) good = 0;
-    #endif
+    //
+    const char *input_file = NULL;
+    const char *output_file_1 = NULL;
+    const char *output_file_2 = NULL;
+    if(argc!=8) good = 0;
     if(good){
-        if(sscanf(argv[1],"%d",&pool_size)!=1) good = 0;
-        if(sscanf(argv[2],"%d",&vision_range)!=1) good = 0;
-        if(sscanf(argv[3],"%d",&max_to_show)!=1) good = 0;
-        input_file = argv[4];
+        if(sscanf(argv[1],"%d",&n_random)!=1) good = 0;
+        if(sscanf(argv[2],"%d",&pool_size)!=1) good = 0;
+        if(sscanf(argv[3],"%d",&vision_range)!=1) good = 0;
+        if(sscanf(argv[4],"%d",&max_to_show)!=1) good = 0;
+        input_file = argv[5];
+        output_file_1 = argv[6];
+        output_file_2 = argv[7];
     }
     if(!good){
-        #ifdef LOCAL_SEARCH
-            printf("Usage: %s <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_before_ls> <output_after_ls>\n",argv[0]);
-        #else
-            printf("Usage: %s <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_file>\n",argv[0]);
-        #endif
-        #ifdef REDUCTION_BESTS
-            printf("A vision_range of 0 should be used on this mode.\n");
-            assert(vision_range==0);
-        #endif
-        #ifdef REDUCTION_RANDOM
-            printf("A vision_range of 0 should be used on this mode.\n");
-            assert(vision_range==0);
-        #endif
+        printf("Usage: %s <n_random> <pool_size> <vision_range> <max_sols_to_show> <problem_file> <output_before_ls> <output_after_ls>\n",argv[0]);
         printf("A pool_size of 1 will activate greedy mode.\n");
-        exit(1);
+        #ifdef REDUCTION_RANDOM
+            printf("A n_random of 0 should be used for this mode. \n");
+        #endif
     }
+    #ifdef REDUCTION_RANDOM
+        if(n_random!=0){
+            printf("A n_random of 0 should be used for this mode.\n");
+            exit(1);
+        }
+    #endif
+    #if defined(REDUCTION_SCI) || defined(REDUCTION_BESTS) || defined(REDUCTION_RANDOM)
+        if(vision_range!=0){
+            printf("A vision_range of 0 should be used for this mode.\n");
+            exit(1);
+        }
+    #endif
+    #if defined(REDUCTION_RANDOM)
+        printf("All random.\n");
+    #else
+        if(n_random==0){
+            printf("Never pick at random.\n");
+        }else{
+            printf("Pick at %d at random.\n",n_random);
+        }
+    #endif
+    printf("N random: %d\n",n_random);
+    assert(n_random>=0);
     printf("Pool size: %d\n",pool_size);
     assert(vision_range>=0);
     printf("Vision range: %d\n",vision_range);
@@ -64,7 +79,7 @@ int main(int argc, char **argv){
 
     //
     solution **sols = new_find_best_solutions(prob,
-        pool_size, vision_range, &n_sols, &max_size_found);
+        n_random, pool_size, vision_range, &n_sols, &max_size_found);
 
     // End counting time
     clock_t end = clock();
@@ -84,34 +99,32 @@ int main(int argc, char **argv){
         print_solution(stdout,sols[i],prob->multiplier);
     }
     printf("Saving solutions...\n");
-    save_solutions(argv[5],sols,sols_show,n_sols,
+    save_solutions(output_file_1,sols,sols_show,n_sols,
         prob->multiplier,
-        input_file,pool_size,vision_range,
+        input_file,n_random,pool_size,vision_range,
         seconds,max_size_found,elapsed_seconds);
     // Perform local search
-    #ifdef LOCAL_SEARCH
-        printf("Starting local searchs...\n");
-        local_search_solutions(prob,sols,&n_sols);
-        // Print best solutions
-        printf("Best solutions after HC:\n");
-        sols_show = n_sols;
-        if(sols_show>max_to_show) sols_show = max_to_show;
-        for(int i=0;i<sols_show;i++){
-            print_solution(stdout,sols[i],prob->multiplier);
-        }
-        // ---@> Update timers
-        end = clock();
-        gettimeofday(&elapsed_end,NULL);
-        seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
-        elapsed_seconds = get_delta_seconds(elapsed_start,elapsed_end);
-        //
-        printf("All done in %f [s]!\n",seconds);
-        printf("Saving solutions...\n");
-        save_solutions(argv[6],sols,sols_show,n_sols,
-            prob->multiplier,
-            input_file,pool_size,vision_range,
-            seconds,max_size_found,elapsed_seconds);
-    #endif
+    printf("Starting local searchs...\n");
+    local_search_solutions(prob,sols,&n_sols);
+    // Print best solutions
+    printf("Best solutions after HC:\n");
+    sols_show = n_sols;
+    if(sols_show>max_to_show) sols_show = max_to_show;
+    for(int i=0;i<sols_show;i++){
+        print_solution(stdout,sols[i],prob->multiplier);
+    }
+    // ---@> Update timers
+    end = clock();
+    gettimeofday(&elapsed_end,NULL);
+    seconds = (float)(end - start) / (float)CLOCKS_PER_SEC;
+    elapsed_seconds = get_delta_seconds(elapsed_start,elapsed_end);
+    //
+    printf("All done in %f [s]!\n",seconds);
+    printf("Saving solutions...\n");
+    save_solutions(output_file_2,sols,sols_show,n_sols,
+        prob->multiplier,
+        input_file,n_random,pool_size,vision_range,
+        seconds,max_size_found,elapsed_seconds);
     // Free memory
     for(int i=0;i<n_sols;i++){
         free(sols[i]);

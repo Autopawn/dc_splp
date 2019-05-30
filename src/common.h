@@ -40,7 +40,7 @@ typedef struct{
     // ^ When it is not -1, the returned solutions must be of that size, also there is no solution filtering in the expansion process.
     lint multiplier;
     // ^ Multiplier of the costs when working with floats.
-    #if defined(REDUCTION_VR) && (defined(DISSIM_MSE) || defined(DISSIM_HAUSDORFF))
+    #if defined(DISSIM_MSE) || defined(DISSIM_HAUSDORFF)
         lint fdistances[MAX_FACILITIES][MAX_FACILITIES];
         // ^ Distance matrix between facilities and facilities, used for solution comparison.
         #ifdef DISSIM_MSE

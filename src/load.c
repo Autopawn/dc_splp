@@ -206,7 +206,8 @@ problem *new_problem_load(const char *file){
 
 void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sols,
         double multiplier,
-        const char *input_file, int pool_size, int vision_range,
+        const char *input_file,
+        int n_random, int pool_size, int vision_range,
         float seconds, int n_iterations, float elapsed){
     FILE *fp;
     printf("Opening file \"%s\"...\n",file);
@@ -222,37 +223,46 @@ void save_solutions(const char *file, solution **sols, int n_sols, int tot_n_sol
     fprintf(fp,"# Pool_size: %d\n",pool_size);
     fprintf(fp,"# Iterations: %d\n",n_iterations);
     fprintf(fp,"# Final_solutions: %d\n",tot_n_sols);
+    fprintf(fp,"# N_random: %d\n",n_random);
     fprintf(fp,"# Vision_range: %d\n",vision_range);
     #ifdef REDUCTION_BESTS
         fprintf(fp,"# Reduction_mode: REDUCTION_BESTS\n");
     #endif
-    #ifdef REDUCTION_RANDOM
-        fprintf(fp,"# Reduction_mode: REDUCTION_RANDOM\n");
+    #ifdef REDUCTION_SCI
+        fprintf(fp,"# Reduction_mode: REDUCTION_SCI\n");
     #endif
-    #ifdef REDUCTION_VR
-        fprintf(fp,"# Reduction_mode: REDUCTION_VR\n");
-        #ifdef DISSIM_MSE
-            fprintf(fp,"# Dissimilitude: DISSIM_MSE\n");
-            #ifdef FDISMODE_SUMOFDELTAS
+    #if !defined(REDUCTION_BESTS) && !defined(REDUCTION_SCI)
+        if(n_random==0){
+            fprintf(fp,"# Reduction_mode: REDUCTION_VR\n");
+        }else if(n_random<pool_size){
+            fprintf(fp,"# Reduction_mode: REDUCTION_RANDOM\n");
+        }else{
+            fprintf(fp,"# Reduction_mode: REDUCTION_HIBRID\n");
+        }
+    #endif
+    //
+    #ifdef DISSIM_MSE
+        fprintf(fp,"# Dissimilitude: DISSIM_MSE\n");
+        #ifdef FDISMODE_SUMOFDELTAS
+        fprintf(fp,"# Facility_dist: FDISMODE_SUMOFDELTAS\n");
+        #endif
+        #ifdef FDISMODE_MINDIST
+        fprintf(fp,"# Facility_dist: FDISMODE_MINDIST\n");
+        #endif
+    #endif
+    #ifdef DISSIM_HAUSDORFF
+        fprintf(fp,"# Dissimilitude: DISSIM_HAUSDORFF\n");
+        #ifdef FDISMODE_SUMOFDELTAS
             fprintf(fp,"# Facility_dist: FDISMODE_SUMOFDELTAS\n");
-            #endif
-            #ifdef FDISMODE_MINDIST
+        #endif
+        #ifdef FDISMODE_MINDIST
             fprintf(fp,"# Facility_dist: FDISMODE_MINDIST\n");
-            #endif
-        #endif
-        #ifdef DISSIM_HAUSDORFF
-            fprintf(fp,"# Dissimilitude: DISSIM_HAUSDORFF\n");
-            #ifdef FDISMODE_SUMOFDELTAS
-                fprintf(fp,"# Facility_dist: FDISMODE_SUMOFDELTAS\n");
-            #endif
-            #ifdef FDISMODE_MINDIST
-                fprintf(fp,"# Facility_dist: FDISMODE_MINDIST\n");
-            #endif
-        #endif
-        #ifdef DISSIM_CLIENTDELTA
-            fprintf(fp,"# Dissimilitude: DISSIM_CLIENTDELTA\n");
         #endif
     #endif
+    #ifdef DISSIM_CLIENTDELTA
+        fprintf(fp,"# Dissimilitude: DISSIM_CLIENTDELTA\n");
+    #endif
+    // -----------
     // Print the solutions:
     if(n_sols==0){
         solution empty_sol = empty_solution();
