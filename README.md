@@ -2,7 +2,7 @@
 
 dc_splp is a Simple plant location problem (SPLP; a.k.a Uncapacitated Facility Location (UFL)) and p-median solver that uses a search method named Disperse Construction.
 
-A newer, more advanced version can be found at https://github.com/autopawn/dc_splp .
+A newer, more advanced version can be found at https://github.com/autopawn/dc2 .
 
 Disperse Construction is a **constructive** method for solving combinatorial problems.
 On each step, solutions are grown adding one element on each possible way, then `pool_size` solutions are selected from these (`pool_size` is a parameter given by the computational resources avaialable).
